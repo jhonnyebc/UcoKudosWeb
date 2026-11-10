@@ -39,7 +39,17 @@ export function App() {
 
         <Suspense fallback={<p role="status">Cargando…</p>}>
           <Routes>
-            <Route path="/" element={<Muro />} />
+            {/* El muro también exige sesión, porque la API lo exige: es una plataforma interna de
+                la universidad, no un tablón público. Sin esto, quien entra por primera vez recibe
+                un «tu sesión expiró» por un 401, y nunca tuvo sesión que expirara. */}
+            <Route
+              path="/"
+              element={
+                <ExigeSesion que="ver el muro">
+                  <Muro />
+                </ExigeSesion>
+              }
+            />
 
             <Route
               path="/publicar"
