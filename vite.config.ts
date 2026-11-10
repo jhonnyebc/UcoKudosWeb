@@ -22,6 +22,20 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
+
+      // El service worker es nuestro, no uno generado: hace falta un manejador propio para los
+      // avisos push, y eso un generador no lo puede escribir. La herramienta sigue inyectando la
+      // lista de archivos a precachear.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+      },
+
+      // Para poder probar los avisos push en desarrollo: sin esto el service worker solo existe en
+      // la versión construida, y probar push obligaría a construir en cada cambio.
+      devOptions: { enabled: true, type: 'module' },
       manifest: {
         name: 'UCO Kudos',
         short_name: 'Kudos',

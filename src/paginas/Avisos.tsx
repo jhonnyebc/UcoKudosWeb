@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { ErrorDeApi, pedir } from '../api/cliente';
+import { BotonAvisosPush } from '../componentes/BotonAvisosPush';
 import type { Aviso, PaginaAvisos } from '../api/tipos';
 
 /**
@@ -64,6 +65,7 @@ export function Avisos() {
     return (
       <>
         <h1>Avisos</h1>
+        <BotonAvisosPush />
         <p className="error" role="alert">
           {error}
         </p>
@@ -78,6 +80,7 @@ export function Avisos() {
     return (
       <>
         <h1>Avisos</h1>
+        <BotonAvisosPush />
         <p role="status">Cargando tus avisos…</p>
       </>
     );
@@ -87,6 +90,7 @@ export function Avisos() {
     return (
       <>
         <h1>Avisos</h1>
+        <BotonAvisosPush />
         <p>No tienes avisos todavía.</p>
       </>
     );
