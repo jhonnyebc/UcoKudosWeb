@@ -1,0 +1,263 @@
+/*
+  Estilos base, mobile first de verdad (DRV-001, ADR-0015).
+
+  «Mobile first» aquí no es una intención: es el orden en que está escrito este archivo. Todo lo de
+  abajo está pensado para una pantalla de celular, y las pantallas grandes se tratan al final, con
+  una única consulta de medios que amplía. Si se escribiera al revés, el 90 % de los usuarios
+  recibiría la versión adaptada a la fuerza.
+*/
+
+:root {
+  /* Verde institucional, elegido con contraste suficiente sobre blanco: una pantalla de celular
+     al sol no perdona un contraste bajo, y la comprobación de accesibilidad de las pruebas falla
+     si baja del mínimo. */
+  --color-marca: #0b5d3b;
+  --color-marca-oscuro: #084a2d;
+  --color-texto: #1a1c1a;
+  --color-texto-suave: #4a4f4a;
+  --color-fondo: #ffffff;
+  --color-superficie: #f4f6f4;
+  --color-borde: #d6dbd6;
+  --color-error: #a4161a;
+
+  /* El objetivo táctil mínimo. No es un número inventado: es el tamaño con el que un pulgar
+     acierta sin mirar. */
+  --toque-minimo: 44px;
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 1rem;
+  --espacio-4: 1.5rem;
+  --espacio-5: 2rem;
+
+  --radio: 12px;
+
+  /* Alto de la barra inferior, para que el contenido no quede debajo de ella. */
+  --alto-navegacion: calc(var(--toque-minimo) + var(--espacio-3));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Sin esto, iOS amplía la página al enfocar un campo de formulario. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+
+  /* Ninguna pantalla con desplazamiento horizontal, que es uno de los tres compromisos de
+     QA-MOV-01. Esto no lo garantiza por sí solo, pero evita que un elemento ancho lo provoque. */
+  overflow-x: hidden;
+}
+
+h1 {
+  font-size: 1.375rem;
+  line-height: 1.3;
+  margin: 0 0 var(--espacio-3);
+}
+
+h2 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  margin: 0 0 var(--espacio-2);
+}
+
+/* El foco tiene que verse. Quitarlo es la forma más rápida de dejar la aplicación inutilizable
+   con teclado, y es un fallo de accesibilidad, no una preferencia estética. */
+:focus-visible {
+  outline: 3px solid var(--color-marca);
+  outline-offset: 2px;
+}
+
+button,
+a.boton {
+  min-height: var(--toque-minimo);
+  min-width: var(--toque-minimo);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: none;
+  border-radius: var(--radio);
+  background: var(--color-marca);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+}
+
+button:disabled {
+  background: var(--color-borde);
+  color: var(--color-texto-suave);
+  cursor: not-allowed;
+}
+
+button.secundario {
+  background: transparent;
+  color: var(--color-marca);
+  border: 2px solid var(--color-marca);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  min-height: var(--toque-minimo);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 2px solid var(--color-borde);
+  border-radius: var(--radio);
+  font: inherit;
+
+  /* 16px como mínimo: por debajo de eso, Safari en iPhone amplía la página al enfocar el campo y
+     el usuario pierde de vista el formulario. */
+  font-size: max(1rem, 16px);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--espacio-1);
+}
+
+/* Enlace para saltar al contenido: lo primero que encuentra quien navega con teclado o lector de
+   pantalla, y le ahorra recorrer la navegación en cada página. */
+.saltar-al-contenido {
+  position: absolute;
+  left: -9999px;
+  top: var(--espacio-2);
+  z-index: 100;
+}
+
+.saltar-al-contenido:focus {
+  left: var(--espacio-2);
+  background: var(--color-fondo);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 2px solid var(--color-marca);
+  border-radius: var(--radio);
+}
+
+.contenido {
+  padding: var(--espacio-3);
+
+  /* Hueco para la barra inferior, más la zona segura del celular con muesca. */
+  padding-bottom: calc(var(--alto-navegacion) + var(--espacio-4) + env(safe-area-inset-bottom));
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+/*
+  La navegación principal va ABAJO, no arriba, y esa es una decisión de diseño, no una moda: en un
+  celular que se sostiene con una mano, la parte superior de la pantalla no se alcanza con el
+  pulgar. Arriba va lo que se lee; abajo, lo que se toca.
+*/
+.navegacion {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  background: var(--color-fondo);
+  border-top: 1px solid var(--color-borde);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 10;
+}
+
+.navegacion a {
+  flex: 1;
+  min-height: var(--toque-minimo);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-1);
+  padding: var(--espacio-2);
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.navegacion a[aria-current='page'] {
+  color: var(--color-marca);
+}
+
+.tarjeta {
+  background: var(--color-superficie);
+  border-radius: var(--radio);
+  padding: var(--espacio-3);
+  margin-bottom: var(--espacio-3);
+}
+
+.error {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* Solo para lectores de pantalla: texto que da contexto sin ocupar espacio en una pantalla
+   pequeña, donde el espacio es el recurso escaso. */
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Quien ha pedido menos movimiento en su sistema lo ha pedido por algo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Y AQUÍ, al final, la pantalla grande: el 10 % de los usuarios ------------------------- */
+@media (min-width: 48rem) {
+  .navegacion {
+    position: sticky;
+    top: 0;
+    bottom: auto;
+    justify-content: center;
+    gap: var(--espacio-4);
+    border-top: none;
+    border-bottom: 1px solid var(--color-borde);
+  }
+
+  .navegacion a {
+    flex: 0 0 auto;
+    flex-direction: row;
+    font-size: 0.9375rem;
+  }
+
+  .contenido {
+    padding-bottom: var(--espacio-5);
+  }
+}
