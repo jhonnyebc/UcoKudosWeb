@@ -10,11 +10,11 @@ El back-end y toda la documentación de arquitectura están en [UcoKudos](https:
 
 **Los tres compromisos de QA-MOV-01**, y cómo se comprueba cada uno:
 
-| Compromiso | Cómo se verifica | Estado |
-|---|---|---|
-| Carga inicial por debajo de 300 KB comprimidos | `npm run peso`, que falla si se supera | **58 KB** |
-| Primera pantalla útil en menos de 2,5 s en red móvil | Pruebas de punta a punta en navegador | Pendiente (Fase 3) |
-| Objetivos táctiles de 44 px y sin desplazamiento horizontal | Estilos base y revisión en pantalla real | Base puesta |
+| Compromiso                                                  | Cómo se verifica                         | Estado             |
+| ----------------------------------------------------------- | ---------------------------------------- | ------------------ |
+| Carga inicial por debajo de 300 KB comprimidos              | `npm run peso`, que falla si se supera   | **58 KB**          |
+| Primera pantalla útil en menos de 2,5 s en red móvil        | Pruebas de punta a punta en navegador    | Pendiente (Fase 3) |
+| Objetivos táctiles de 44 px y sin desplazamiento horizontal | Estilos base y revisión en pantalla real | Base puesta        |
 
 **El token de sesión vive en memoria y en ningún otro sitio.** Un token en `localStorage` queda al alcance de cualquier script inyectado; el precio de tenerlo en memoria es perder la sesión al recargar, y se paga a gusto. Hay una regla del analizador que impide usar el almacenamiento del navegador, para que no se cuele en un descuido.
 
@@ -36,15 +36,15 @@ Queda en `http://localhost:5174`. Las llamadas a `/api` se redirigen al back-end
 
 ## Guiones
 
-| Guion | Para qué |
-|---|---|
-| `npm run dev` | Servidor de desarrollo |
-| `npm run build` | Comprueba tipos y construye |
-| `npm test` | Pruebas de componentes, con verificación de accesibilidad |
-| `npm run lint` | Analizador estático |
-| `npm run formato` | Comprueba el formato |
-| `npm run peso` | Presupuesto de peso de QA-MOV-01, tras construir |
-| `npm run tipos:api` | Regenera los tipos desde el contrato OpenAPI |
+| Guion               | Para qué                                                  |
+| ------------------- | --------------------------------------------------------- |
+| `npm run dev`       | Servidor de desarrollo                                    |
+| `npm run build`     | Comprueba tipos y construye                               |
+| `npm test`          | Pruebas de componentes, con verificación de accesibilidad |
+| `npm run lint`      | Analizador estático                                       |
+| `npm run formato`   | Comprueba el formato                                      |
+| `npm run peso`      | Presupuesto de peso de QA-MOV-01, tras construir          |
+| `npm run tipos:api` | Regenera los tipos desde el contrato OpenAPI              |
 
 ## Lo que falta, dicho claro
 
