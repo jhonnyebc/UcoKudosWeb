@@ -56,6 +56,33 @@ describe('almacén de sesión', () => {
     expect(quien).not.toHaveProperty('token');
   });
 
+  /**
+   * **Prueba de regresión de un fallo que dejaba la pantalla en blanco.**
+   *
+   * La interfaz se suscribe con `useSyncExternalStore`, que compara la instantánea con la anterior
+   * **por identidad**, no por contenido. La primera versión construía un objeto nuevo en cada
+   * llamada, así que React creía que la sesión cambiaba en cada dibujado y entraba en bucle hasta
+   * abortar: el inicio de sesión funcionaba y la aplicación se quedaba en blanco al volver.
+   *
+   * Esta prueba faltaba, y por eso el fallo llegó al navegador: las demás comprueban los valores,
+   * y el defecto no estaba en los valores sino en la identidad del objeto.
+   */
+  it('devuelve siempre la misma instancia mientras la sesión no cambia', () => {
+    guardarSesion(unaSesion());
+
+    expect(quienEstaDentro()).toBe(quienEstaDentro());
+  });
+
+  it('devuelve una instancia distinta cuando la sesión sí cambia', () => {
+    guardarSesion(unaSesion());
+    const primera = quienEstaDentro();
+
+    guardarSesion({ ...unaSesion(), nombre: 'Luis Pérez' });
+
+    expect(quienEstaDentro()).not.toBe(primera);
+    expect(quienEstaDentro()?.nombre).toBe('Luis Pérez');
+  });
+
   it('avisa a quien escucha cuando se entra y cuando se sale', () => {
     const escucha = vi.fn();
     alCambiarLaSesion(escucha);

@@ -26,6 +26,22 @@ export interface Sesion {
 type Escucha = (sesion: Sesion | null) => void;
 
 let sesionActual: Sesion | null = null;
+
+/**
+ * La vista sin token, **calculada una sola vez por sesión**.
+ *
+ * Que esto sea un valor guardado y no un objeto nuevo en cada llamada no es una optimización: es
+ * una corrección. La interfaz se suscribe a este almacén con `useSyncExternalStore`, que compara
+ * la instantánea con la anterior **por identidad**. Devolviendo un objeto nuevo cada vez, React
+ * concluye que la sesión cambió en cada dibujado, vuelve a dibujar, obtiene otro objeto nuevo y
+ * así hasta que aborta con «Maximum update depth exceeded» y deja la pantalla en blanco.
+ *
+ * Ocurrió de verdad: el inicio de sesión funcionaba, el token se canjeaba bien y la aplicación se
+ * quedaba en blanco justo al volver. Las pruebas del almacén no lo vieron porque comprueban sus
+ * valores, no un componente que lo consuma; se detectó mirando la consola del navegador.
+ */
+let vistaSinToken: Omit<Sesion, 'token'> | null = null;
+
 const escuchas = new Set<Escucha>();
 
 function avisar(): void {
@@ -34,14 +50,23 @@ function avisar(): void {
   }
 }
 
-export function guardarSesion(sesion: Sesion): void {
+function fijar(sesion: Sesion | null): void {
   sesionActual = sesion;
+
+  vistaSinToken =
+    sesion === null
+      ? null
+      : { nombre: sesion.nombre, personaId: sesion.personaId, expiraEn: sesion.expiraEn };
+
   avisar();
 }
 
+export function guardarSesion(sesion: Sesion): void {
+  fijar(sesion);
+}
+
 export function cerrarSesion(): void {
-  sesionActual = null;
-  avisar();
+  fijar(null);
 }
 
 /**
@@ -57,8 +82,7 @@ export function tokenVigente(ahora: number = Date.now()): string | null {
   }
 
   if (sesionActual.expiraEn <= ahora) {
-    sesionActual = null;
-    avisar();
+    fijar(null);
     return null;
   }
 
@@ -67,12 +91,7 @@ export function tokenVigente(ahora: number = Date.now()): string | null {
 
 /** Los datos de quien está dentro, sin el token: es lo que la interfaz necesita para mostrarse. */
 export function quienEstaDentro(): Omit<Sesion, 'token'> | null {
-  if (sesionActual === null) {
-    return null;
-  }
-
-  const { nombre, personaId, expiraEn } = sesionActual;
-  return { nombre, personaId, expiraEn };
+  return vistaSinToken;
 }
 
 export function alCambiarLaSesion(escucha: Escucha): () => void {
@@ -85,5 +104,6 @@ export function alCambiarLaSesion(escucha: Escucha): () => void {
 /** Solo para las pruebas: deja el módulo como recién cargado. */
 export function reiniciarParaPruebas(): void {
   sesionActual = null;
+  vistaSinToken = null;
   escuchas.clear();
 }

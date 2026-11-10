@@ -56,11 +56,41 @@ describe('PKCE', () => {
 
 describe('leerTokenSinValidar', () => {
   function tokenCon(carga: Record<string, unknown>): string {
-    const base64url = (texto: string) =>
-      btoa(texto).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // Se codifica como lo hace un proveedor real: el JSON pasa a bytes UTF-8 y esos bytes a
+    // base64url. Hacerlo con `btoa` directamente sobre el texto rompería las tildes **en la propia
+    // prueba**, y entonces la prueba no comprobaría nada del caso que importa.
+    const base64url = (texto: string) => {
+      const bytes = new TextEncoder().encode(texto);
+      let binario = '';
+      for (const byte of bytes) {
+        binario += String.fromCharCode(byte);
+      }
+      return btoa(binario).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    };
 
     return `${base64url('{"alg":"RS256"}')}.${base64url(JSON.stringify(carga))}.firma`;
   }
+
+  /**
+   * **Prueba de regresión.** El nombre llegaba como «BenÃ­tez» porque el token se decodificaba
+   * byte a byte en lugar de como UTF-8. En un proyecto en español eso no es un detalle: es
+   * enseñarle a la gente su propio nombre mal escrito.
+   */
+  it('respeta las tildes y la eñe del nombre', () => {
+    const datos = leerTokenSinValidar(
+      tokenCon({ sub: 'auth0|9', name: 'Jhonny Benítez Caro', exp: 1800 }),
+    );
+
+    expect(datos?.nombre).toBe('Jhonny Benítez Caro');
+  });
+
+  it('respeta también los apellidos con eñe', () => {
+    const datos = leerTokenSinValidar(
+      tokenCon({ sub: 'auth0|10', name: 'María Peña Muñoz', exp: 1 }),
+    );
+
+    expect(datos?.nombre).toBe('María Peña Muñoz');
+  });
 
   it('saca el identificador, el nombre y la caducidad', () => {
     const datos = leerTokenSinValidar(tokenCon({ sub: 'auth0|123', name: 'Ana Gómez', exp: 1800 }));

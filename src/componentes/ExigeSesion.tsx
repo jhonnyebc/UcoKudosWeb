@@ -30,8 +30,12 @@ export function ExigeSesion({ children, que }: { children: ReactNode; que: strin
   return (
     <>
       <p>Para {que} necesitas iniciar sesión.</p>
+
+      {/* El texto incluye la acción a propósito. Con un «Entrar» a secas habría dos botones de
+          nombre idéntico en la misma pantalla —este y el de la barra—, y para quien navega con
+          lector de pantalla dos controles con el mismo nombre son indistinguibles. */}
       <button type="button" onClick={entrar}>
-        Entrar
+        Entrar para {que}
       </button>
     </>
   );

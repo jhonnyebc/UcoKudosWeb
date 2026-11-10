@@ -110,8 +110,15 @@ describe('flujo OIDC con PKCE', () => {
    * verificador se envía **en el canje**, que es el único momento en que debe salir.
    */
   it('con el estado correcto canja el código y abre la sesión', async () => {
-    const base64url = (t: string) =>
-      btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    // Se codifica como lo hace un proveedor real: a bytes UTF-8 y de ahí a base64url. Con `btoa`
+    // sobre el texto directamente, un nombre con tilde se rompe en la propia prueba.
+    const base64url = (t: string) => {
+      let binario = '';
+      for (const byte of new TextEncoder().encode(t)) {
+        binario += String.fromCharCode(byte);
+      }
+      return btoa(binario).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    };
     const idToken = [
       base64url('{"alg":"RS256"}'),
       base64url(JSON.stringify({ sub: 'auth0|7', name: 'Ana Gómez', exp: 2_000_000_000 })),

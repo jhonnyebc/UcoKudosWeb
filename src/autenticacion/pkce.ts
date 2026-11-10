@@ -94,7 +94,18 @@ export function leerTokenSinValidar(idToken: string): DatosDelToken | null {
   }
 
   try {
-    const json = atob(carga.replace(/-/g, '+').replace(/_/g, '/'));
+    // **La decodificación es en dos pasos, y el segundo no es opcional.** `atob` devuelve una
+    // cadena de bytes, no texto: cada carácter es un byte suelto. Si se interpreta tal cual, un
+    // nombre con tilde se rompe —«Benítez» se convierte en «BenÃ­tez»—, porque los dos bytes que
+    // UTF-8 usa para la í se leen como dos caracteres distintos.
+    //
+    // Se detectó al iniciar sesión de verdad, viendo el nombre mal escrito en pantalla. En un
+    // proyecto en español, con apellidos como Peña o Muñoz, esto no es un detalle estético: es
+    // mostrarle a la gente su nombre mal.
+    const bytes = Uint8Array.from(atob(carga.replace(/-/g, '+').replace(/_/g, '/')), (c) =>
+      c.charCodeAt(0),
+    );
+    const json = new TextDecoder('utf-8').decode(bytes);
     const datos = JSON.parse(json) as Record<string, unknown>;
 
     const sub = typeof datos['sub'] === 'string' ? datos['sub'] : null;

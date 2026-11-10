@@ -48,8 +48,9 @@ Queda en `http://localhost:5174`. Las llamadas a `/api` se redirigen al back-end
 
 ## Lo que falta, dicho claro
 
-- **La autenticación con el proveedor de identidad.** El almacén de sesión está escrito, pero el flujo de código de autorización con PKCE no está conectado. Por eso la pantalla de avisos está vacía.
+- **El listado de avisos no existe todavía en la API.** La pantalla está escrita y la sesión funciona, pero el back-end solo expone los avisos en tiempo real y la clave pública de Web Push: falta un `GET /api/avisos` que devuelva los avisos persistidos de quien pregunta. Hasta entonces esa pantalla muestra un error honesto en lugar de datos inventados.
 - **Los tipos del contrato.** ADR-0015 exige generarlos del OpenAPI y hoy están escritos a mano en `src/api/tipos.ts`, con el guion ya preparado. Mientras sean a mano, una ruptura de contrato no sale al compilar, que es justo lo que la decisión quería evitar.
 - **El buscador de personas** al publicar: hoy se pega el identificador porque la API todavía no ofrece búsqueda. Pedirle un identificador a un usuario no es aceptable como versión final.
+- **La renovación silenciosa de la sesión.** El token vive en memoria, así que al recargar la página hay que volver a entrar. Es el precio consciente de no guardarlo en el navegador (ADR-0015), pero conviene suavizarlo renovando en silencio contra el proveedor.
 - **La verificación de contraste.** La comprobación automática de accesibilidad corre en cada prueba, pero la regla de contraste está desactivada porque el DOM simulado no pinta y la regla se omitiría en silencio. Se mide en navegador real, en las pruebas de punta a punta.
 - **Los iconos de la PWA** (`icono-192.png` y `icono-512.png`) todavía no existen.
