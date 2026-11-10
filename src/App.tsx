@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
+import { useRestaurarSesion } from './autenticacion/useRestaurarSesion';
 import { BarraDeSesion } from './componentes/BarraDeSesion';
 import { ExigeSesion } from './componentes/ExigeSesion';
 import { Muro } from './paginas/Muro';
@@ -20,6 +21,18 @@ const Avisos = lazy(() => import('./paginas/Avisos').then((m) => ({ default: m.A
 const Retorno = lazy(() => import('./paginas/Retorno').then((m) => ({ default: m.Retorno })));
 
 export function App() {
+  const restaurando = useRestaurarSesion();
+
+  if (restaurando) {
+    // Mientras se recupera la sesión no se dibuja el contenido: enseñar "necesitas iniciar sesión"
+    // a quien la tiene, y cambiarlo un segundo después, se lee como un fallo aunque no lo sea.
+    return (
+      <main className="contenido">
+        <p role="status">Recuperando tu sesión…</p>
+      </main>
+    );
+  }
+
   return (
     <>
       <a className="saltar-al-contenido" href="#contenido">
