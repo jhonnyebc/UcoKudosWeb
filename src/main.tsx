@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './App';
 import { AvisoDeNuevaVersion } from './componentes/AvisoDeNuevaVersion';
+import { AvisosEnVivo } from './componentes/AvisosEnVivo';
 import './estilos/global.css';
 
 const raiz = document.getElementById('raiz');
@@ -16,6 +17,7 @@ createRoot(raiz).render(
   <StrictMode>
     <BrowserRouter>
       <App />
+      <AvisosEnVivo />
       <AvisoDeNuevaVersion />
     </BrowserRouter>
   </StrictMode>,

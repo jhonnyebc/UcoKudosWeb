@@ -356,3 +356,42 @@ label {
   font-size: 0.875rem;
   vertical-align: middle;
 }
+
+/* Los avisos que llegan en vivo se superponen, encima de la navegación y del aviso de versión.
+   En el celular ocupan el ancho; en pantalla grande se quedan en una columna a la derecha. */
+.avisos-en-vivo {
+  position: fixed;
+  left: var(--espacio-3);
+  right: var(--espacio-3);
+  bottom: calc(var(--alto-navegacion) + var(--espacio-2) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  z-index: 30;
+  pointer-events: none;
+}
+
+/* La tarjeta sí recibe toques; el contenedor no, para no bloquear lo que hay debajo. */
+.aviso-flotante {
+  margin: 0;
+  background: var(--color-fondo);
+  border: 2px solid var(--color-marca);
+  pointer-events: auto;
+}
+
+.aviso-flotante h2 {
+  font-size: 1rem;
+}
+
+.aviso-flotante p {
+  margin: 0 0 var(--espacio-2);
+}
+
+@media (min-width: 48rem) {
+  .avisos-en-vivo {
+    left: auto;
+    right: var(--espacio-4);
+    bottom: var(--espacio-4);
+    width: 22rem;
+  }
+}
