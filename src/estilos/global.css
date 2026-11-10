@@ -335,3 +335,24 @@ label {
     max-width: 24rem;
   }
 }
+
+/* Un aviso sin leer se distingue con un borde, no solo con color: quien no distingue bien los
+   colores también tiene que notar la diferencia. El contador, además, lo dice con palabras para
+   los lectores de pantalla. */
+.tarjeta--sin-leer {
+  border-left: 4px solid var(--color-marca);
+}
+
+.contador-sin-leer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 var(--espacio-2);
+  border-radius: 999px;
+  background: var(--color-marca);
+  color: #ffffff;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}

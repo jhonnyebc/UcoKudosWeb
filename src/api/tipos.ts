@@ -48,3 +48,23 @@ export interface KudoPublicado {
   readonly id: string;
   readonly publicadoEn: string;
 }
+
+export interface Aviso {
+  readonly id: number;
+  readonly clave: string;
+  readonly titulo: string;
+  readonly cuerpo: string;
+  readonly leido: boolean;
+  readonly generadoEn: string;
+}
+
+/**
+ * Los avisos con el contador de no leídos.
+ *
+ * El contador viene del servidor y cuenta **todos** los no leídos, no solo los de esta página:
+ * sacarlo contando lo que llegó daría un número equivocado en cuanto haya más de una página.
+ */
+export interface PaginaAvisos {
+  readonly elementos: readonly Aviso[];
+  readonly sinLeer: number;
+}
