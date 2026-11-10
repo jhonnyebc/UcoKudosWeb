@@ -1,0 +1,94 @@
+# Quality gates del cliente web (ADR-0017). Corren en cada PR hacia develop o main y en cada push
+# a esas ramas. Todas bloquean: una puerta que solo informa es documentación, no una puerta.
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cliente:
+    name: Cliente (formato, análisis, tipos, pruebas y peso)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` y no `npm install`: instala exactamente lo que dice el archivo de bloqueo. Con
+      # `install`, el pipeline podría estar probando versiones distintas de las del equipo, que es
+      # la forma más silenciosa de que «en mi máquina funciona».
+      - name: Instalar
+        run: npm ci
+
+      - name: Formato
+        run: npm run formato
+
+      - name: Análisis estático
+        run: npm run lint
+
+      # Los tipos se comprueban aparte de la construcción para que el mensaje diga qué falló. La
+      # construcción también los comprueba, pero mezclados con los errores de empaquetado.
+      - name: Tipos
+        run: npx tsc --noEmit
+
+      # Incluyen la verificación automática de accesibilidad (ADR-0015, punto 7).
+      - name: Pruebas
+        run: npm test
+
+      - name: Construir
+        run: npx vite build
+
+      # **La puerta que hace que Mobile First sea medible.** Falla si la carga inicial supera los
+      # 300 KB comprimidos de QA-MOV-01. Sin esto, el presupuesto se incumpliría poco a poco y sin
+      # que nadie se enterara: ninguna biblioteca pesa mucho por sí sola, pesan todas juntas.
+      - name: Presupuesto de peso (QA-MOV-01)
+        run: npm run peso
+
+  secretos:
+    name: Escaneo de secretos (ADR-0018)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Historial completo: un secreto borrado del archivo sigue en el historial.
+          fetch-depth: 0
+
+      # Fijada por SHA, no por etiqueta: una etiqueta se puede mover a código distinto (ADR-0017).
+      - uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  dependencias:
+    name: Vulnerabilidades de las dependencias
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Umbral en «high»: con el de por omisión, el ruido de avisos menores en dependencias de
+      # desarrollo haría que nadie mirara el resultado, que es peor que no tener la puerta.
+      - name: Auditoría de dependencias
+        run: npm audit --audit-level=high
