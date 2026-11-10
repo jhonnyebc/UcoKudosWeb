@@ -145,14 +145,38 @@ function interpretar(dato: string): AvisoEnVivo | null {
   try {
     const crudo = JSON.parse(dato) as Record<string, unknown>;
 
-    const titulo = typeof crudo['titulo'] === 'string' ? crudo['titulo'] : null;
-    const cuerpo = typeof crudo['cuerpo'] === 'string' ? crudo['cuerpo'] : null;
+    // El servidor envía `{"clave": "...", "datos": { "Titulo": "...", ... }}`: el aviso va anidado
+    // y con mayúscula inicial, porque ahí se serializa un objeto sin política de nombres.
+    //
+    // Esto costó encontrarlo y merece la explicación: la primera versión leía `titulo` en la raíz,
+    // así que **descartaba todos los avisos en silencio**. El servidor registraba la entrega como
+    // correcta —porque para él lo fue, dejó el mensaje en el canal— y en la pantalla no aparecía
+    // nada. Nada fallaba por ninguno de los dos lados; simplemente no se entendían.
+    //
+    // Se aceptan las dos formas de escribir cada campo a propósito: si algún día el servidor
+    // cambia a minúscula inicial, el cliente sigue funcionando en lugar de volver a callarse.
+    const envoltorio = crudo['datos'];
+    const aviso = (
+      typeof envoltorio === 'object' && envoltorio !== null ? envoltorio : crudo
+    ) as Record<string, unknown>;
+
+    const texto = (...nombres: string[]): string | null => {
+      for (const nombre of nombres) {
+        if (typeof aviso[nombre] === 'string') {
+          return aviso[nombre];
+        }
+      }
+      return null;
+    };
+
+    const titulo = texto('Titulo', 'titulo');
+    const cuerpo = texto('Cuerpo', 'cuerpo');
 
     if (titulo === null || cuerpo === null) {
       return null;
     }
 
-    return { titulo, cuerpo, url: typeof crudo['url'] === 'string' ? crudo['url'] : null };
+    return { titulo, cuerpo, url: texto('Url', 'url') };
   } catch {
     // Un mensaje que no se entiende se descarta sin tumbar la conexión: perder un aviso es malo,
     // perder el canal entero es peor.
