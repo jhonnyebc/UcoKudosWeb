@@ -57,6 +57,12 @@ export default tseslint.config(
       // En las pruebas se construyen datos falsos a propósito; exigir aquí la misma rigidez solo
       // produce ruido.
       '@typescript-eslint/no-unsafe-assignment': 'off',
+
+      // Las pruebas del flujo de autenticación **tienen** que mirar el almacenamiento de sesión:
+      // es donde comprueban que el verificador se guardó, que no viajó al proveedor y que se borró
+      // después de usarlo. Prohibirlo aquí dejaría sin comprobar justo la excepción que la regla
+      // permite en `oidc.ts`, que es lo contrario de lo que la regla persigue.
+      'no-restricted-properties': 'off',
     },
   },
   {

@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
+import { BarraDeSesion } from './componentes/BarraDeSesion';
+import { ExigeSesion } from './componentes/ExigeSesion';
 import { Muro } from './paginas/Muro';
 
 /**
@@ -15,6 +17,7 @@ const PublicarKudo = lazy(() =>
   import('./paginas/PublicarKudo').then((m) => ({ default: m.PublicarKudo })),
 );
 const Avisos = lazy(() => import('./paginas/Avisos').then((m) => ({ default: m.Avisos })));
+const Retorno = lazy(() => import('./paginas/Retorno').then((m) => ({ default: m.Retorno })));
 
 export function App() {
   return (
@@ -32,11 +35,31 @@ export function App() {
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
+        <BarraDeSesion />
+
         <Suspense fallback={<p role="status">Cargando…</p>}>
           <Routes>
             <Route path="/" element={<Muro />} />
-            <Route path="/publicar" element={<PublicarKudo />} />
-            <Route path="/avisos" element={<Avisos />} />
+
+            <Route
+              path="/publicar"
+              element={
+                <ExigeSesion que="publicar un reconocimiento">
+                  <PublicarKudo />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/avisos"
+              element={
+                <ExigeSesion que="ver tus avisos">
+                  <Avisos />
+                </ExigeSesion>
+              }
+            />
+
+            <Route path="/retorno" element={<Retorno />} />
             <Route path="*" element={<NoEncontrada />} />
           </Routes>
         </Suspense>

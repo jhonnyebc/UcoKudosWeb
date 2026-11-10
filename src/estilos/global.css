@@ -261,3 +261,77 @@ label {
     padding-bottom: var(--espacio-5);
   }
 }
+
+/* --- Piezas concretas ---------------------------------------------------------------------- */
+
+/* Las listas de tarjetas no son listas con viñetas, pero sí son listas: el marcado dice que lo
+   son para que un lector de pantalla anuncie cuántos elementos hay, y el estilo quita la viñeta.
+   Cambiar el marcado a <div> sería perder esa información por un motivo estético. */
+.lista-kudos,
+.lista-avisos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.categoria {
+  margin: 0 0 var(--espacio-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-marca);
+}
+
+.meta {
+  margin: var(--espacio-2) 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-texto-suave);
+}
+
+.barra-sesion {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-3);
+}
+
+.barra-sesion__nombre {
+  font-weight: 600;
+
+  /* Un nombre largo no debe empujar el botón fuera de la pantalla: se recorta él. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* El aviso de versión nueva va fijo y sobre la navegación, porque si se desplazara con el
+   contenido el usuario podría no verlo nunca. */
+.aviso-version {
+  position: fixed;
+  left: var(--espacio-3);
+  right: var(--espacio-3);
+  bottom: calc(var(--alto-navegacion) + var(--espacio-2) + env(safe-area-inset-bottom));
+  margin: 0;
+  background: var(--color-fondo);
+  border: 2px solid var(--color-marca);
+  z-index: 20;
+}
+
+.aviso-version p {
+  margin: 0 0 var(--espacio-2);
+}
+
+.aviso-version__acciones {
+  display: flex;
+  gap: var(--espacio-2);
+  flex-wrap: wrap;
+}
+
+@media (min-width: 48rem) {
+  .aviso-version {
+    left: auto;
+    right: var(--espacio-4);
+    bottom: var(--espacio-4);
+    max-width: 24rem;
+  }
+}
