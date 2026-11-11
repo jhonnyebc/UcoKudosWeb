@@ -1,0 +1,20 @@
+# Qué NO entra en el contexto de construcción.
+#
+# node_modules se excluye siempre: la imagen instala sus dependencias con `npm ci` y las de
+# Windows no sirven en Linux. Copiarlas haría el contexto enorme y la imagen incorrecta.
+node_modules/
+dist/
+dev-dist/
+coverage/
+
+.git/
+.github/
+
+# Nunca: aunque hoy no haya secretos en el cliente, un día podría haberlos.
+.env
+*.env
+!.env.example
+*.local
+
+.vscode/
+.idea/
