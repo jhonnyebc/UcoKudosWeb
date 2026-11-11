@@ -50,6 +50,39 @@ function mensajeSegunEstado(estado: number): string {
   }
 }
 
+/**
+ * Saca del cuerpo el motivo concreto que dio la API, si lo dio.
+ *
+ * **Sin esto el cliente oculta lo único que le serviría al usuario.** La API responde un
+ * ProblemDetails cuya propiedad `detail` trae la regla que se incumplió —«No se puede publicar un
+ * Kudo para uno mismo»—, y enseñar en su lugar «hay algo mal en los datos» obliga a adivinar qué
+ * campo está mal cuando ningún campo lo está.
+ *
+ * Solo se usa por debajo de 500 y es deliberado: el detalle de un 4xx describe lo que hizo quien
+ * llama, mientras que el de un 5xx describe las tripas del servidor y no es asunto suyo.
+ *
+ * Nunca lanza. Un error aquí dejaría al usuario sin ningún mensaje, que es peor que uno genérico.
+ */
+async function detalleDeLaApi(respuesta: Response): Promise<string | null> {
+  if (respuesta.status >= 500) {
+    return null;
+  }
+
+  try {
+    const cuerpo: unknown = await respuesta.json();
+
+    if (typeof cuerpo !== 'object' || cuerpo === null) {
+      return null;
+    }
+
+    const detalle = (cuerpo as Record<string, unknown>)['detail'];
+
+    return typeof detalle === 'string' && detalle.trim() !== '' ? detalle.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 interface OpcionesPeticion {
   readonly metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   readonly cuerpo?: unknown;
@@ -92,9 +125,13 @@ export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): P
   }
 
   if (!respuesta.ok) {
+    // El motivo que da la API manda sobre el mensaje por estado: es más concreto y ya viene
+    // redactado para una persona. El genérico queda como red de seguridad cuando no hay motivo.
+    const detalle = await detalleDeLaApi(respuesta);
+
     throw new ErrorDeApi(
       respuesta.status,
-      mensajeSegunEstado(respuesta.status),
+      detalle ?? mensajeSegunEstado(respuesta.status),
       respuesta.status === 401,
     );
   }
