@@ -133,8 +133,13 @@ jobs:
             VITE_IDENTIDAD_CLIENTE=${{ vars.VITE_IDENTIDAD_CLIENTE }}
             VITE_IDENTIDAD_AUDIENCIA=${{ vars.VITE_IDENTIDAD_AUDIENCIA }}
 
-      # Solo se publica desde main: una imagen por cada push a cualquier rama llena el registro de
-      # versiones que nadie va a desplegar.
+      # Solo se publica desde main: una imagen por cada push a cualquier rama llenaría el registro
+      # de versiones que nadie va a desplegar.
+      #
+      # El lanzamiento manual también publica, y hace falta: cuando cambia una variable del
+      # repositorio —la configuración de identidad, por ejemplo— hay que reconstruir la imagen sin
+      # que el código haya cambiado. Con la condición anterior se construía y no se publicaba, en
+      # silencio, que es la peor forma de fallar.
       - name: Publicar
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         run: docker push ghcr.io/${{ github.repository_owner }}/ucokudos-web:${{ steps.etiqueta.outputs.valor }}
