@@ -191,7 +191,10 @@ label {
   align-items: center;
   justify-content: center;
   gap: var(--espacio-1);
-  padding: var(--espacio-2);
+  /* Poco relleno lateral: con cinco pestañas en 375 px, cada una dispone de unos 75 px, y el
+     texto de «Categorías» necesita casi todos. */
+  padding: var(--espacio-2) var(--espacio-1);
+  min-width: 0;
   color: var(--color-texto-suave);
   text-decoration: none;
   font-size: 0.75rem;
@@ -429,4 +432,16 @@ label {
 
 .lista-adjuntos li {
   margin-bottom: var(--espacio-1);
+}
+
+/* --- Administración de categorías --------------------------------------------------------- */
+
+.lista-categorias {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acciones {
+  margin-bottom: 0;
 }
