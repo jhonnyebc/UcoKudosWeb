@@ -19,6 +19,7 @@ const PublicarKudo = lazy(() =>
 );
 const Avisos = lazy(() => import('./paginas/Avisos').then((m) => ({ default: m.Avisos })));
 const Retorno = lazy(() => import('./paginas/Retorno').then((m) => ({ default: m.Retorno })));
+const Auditoria = lazy(() => import('./paginas/Auditoria').then((m) => ({ default: m.Auditoria })));
 
 export function App() {
   const restaurando = useRestaurarSesion();
@@ -45,6 +46,7 @@ export function App() {
         </NavLink>
         <NavLink to="/publicar">Publicar</NavLink>
         <NavLink to="/avisos">Avisos</NavLink>
+        <NavLink to="/auditoria">Auditoría</NavLink>
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
@@ -78,6 +80,15 @@ export function App() {
               element={
                 <ExigeSesion que="ver tus avisos">
                   <Avisos />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/auditoria"
+              element={
+                <ExigeSesion que="verificar la auditoría">
+                  <Auditoria />
                 </ExigeSesion>
               }
             />

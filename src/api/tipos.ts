@@ -79,3 +79,11 @@ export interface PersonaBuscada {
   readonly id: string;
   readonly nombreCompleto: string;
 }
+
+/** Resultado de verificar la cadena de hashes de la auditoría. */
+export interface Verificacion {
+  readonly eventosRevisados: number;
+  readonly intacta: boolean;
+  readonly primerEventoAlterado: number | null;
+  readonly detalle: string;
+}
