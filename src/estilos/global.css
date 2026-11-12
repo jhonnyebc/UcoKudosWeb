@@ -395,3 +395,38 @@ label {
     width: 22rem;
   }
 }
+
+/* --- Adjuntos ------------------------------------------------------------------------------- */
+
+/* Un botón que se ve como enlace, para acciones que no navegan: abrir el panel de adjuntos o un
+   archivo. Se mantiene como <button> a propósito: un <a> sin destino real no es accesible por
+   teclado ni lo anuncian los lectores de pantalla como una acción. */
+.enlace {
+  min-height: var(--toque-minimo);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-marca);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.enlace:hover {
+  color: var(--color-marca-oscuro);
+}
+
+.adjuntos {
+  margin-top: var(--espacio-2);
+}
+
+.lista-adjuntos {
+  margin: var(--espacio-2) 0 0;
+  padding-left: var(--espacio-4);
+}
+
+.lista-adjuntos li {
+  margin-bottom: var(--espacio-1);
+}

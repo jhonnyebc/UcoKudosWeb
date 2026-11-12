@@ -1,4 +1,5 @@
 import type { KudoDelMuro } from '../api/tipos';
+import { AdjuntosDeKudo } from './AdjuntosDeKudo';
 
 /**
  * Un Kudo en el muro.
@@ -38,14 +39,9 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
             <span className="solo-lectores"> según {kudo.totalCalificaciones} calificaciones</span>
           </span>
         )}
-
-        {kudo.totalAdjuntos > 0 && (
-          <span>
-            {' · '}
-            {kudo.totalAdjuntos} {kudo.totalAdjuntos === 1 ? 'adjunto' : 'adjuntos'}
-          </span>
-        )}
       </p>
+
+      {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
     </article>
   );
 }

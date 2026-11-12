@@ -87,3 +87,23 @@ export interface Verificacion {
   readonly primerEventoAlterado: number | null;
   readonly detalle: string;
 }
+
+/** Lo que devuelve la API al pedir subir un adjunto: a dónde subir y con qué confirmar después. */
+export interface SubidaAdjunto {
+  readonly adjuntoId: string;
+  /** URL prefirmada del almacenamiento. Es de un solo uso lógico y vence en pocos minutos. */
+  readonly urlDeSubida: string;
+  readonly validezMinutos: number;
+}
+
+export interface Adjunto {
+  readonly id: string;
+  readonly nombreOriginal: string;
+  readonly tipoDetectado: string | null;
+  readonly tamanoBytes: number;
+}
+
+export interface DetalleKudo {
+  readonly kudo: KudoDelMuro;
+  readonly adjuntos: readonly Adjunto[];
+}

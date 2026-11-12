@@ -1,6 +1,14 @@
 import { useEffect, useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import {
+  ACEPTAR,
+  MAXIMO_POR_KUDO,
+  TAMANO_MAXIMO_BYTES,
+  subirAdjunto,
+  tamanoLegible,
+  validarSeleccion,
+} from '../adjuntos/adjuntos';
 import { ErrorDeApi, pedir } from '../api/cliente';
 import type { Categoria, KudoPublicado, PersonaBuscada } from '../api/tipos';
 import { BuscadorDePersonas } from '../componentes/BuscadorDePersonas';
@@ -29,6 +37,28 @@ export function PublicarKudo() {
   const [contenido, setContenido] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const idAdjuntos = useId();
+  const [archivos, setArchivos] = useState<readonly File[]>([]);
+  const [errorDeAdjuntos, setErrorDeAdjuntos] = useState<string | null>(null);
+  const [progreso, setProgreso] = useState<string | null>(null);
+
+  // Si el Kudo se publicó pero algún adjunto no se pudo subir, la pantalla pasa a contarlo en
+  // lugar de volver al formulario: volver a enviar publicaría el Kudo por segunda vez.
+  const [publicadoConFallos, setPublicadoConFallos] = useState<readonly string[] | null>(null);
+
+  function alElegirArchivos(evento: React.ChangeEvent<HTMLInputElement>) {
+    const seleccion = Array.from(evento.target.files ?? []);
+    const problema = validarSeleccion(seleccion);
+
+    setErrorDeAdjuntos(problema);
+    setArchivos(problema === null ? seleccion : []);
+
+    // Una selección rechazada no se deja en el campo: parecería que se va a enviar.
+    if (problema !== null) {
+      evento.target.value = '';
+    }
+  }
 
   useEffect(() => {
     const control = new AbortController();
@@ -65,11 +95,68 @@ export function PublicarKudo() {
         cuerpo: { destinatarioId: destinatario.id, categoriaId, contenido: contenidoLimpio },
       });
 
-      navegar(`/?publicado=${publicado.id}`);
+      // Los adjuntos se suben DESPUÉS de publicar, porque la API necesita el Kudo para asociarlos
+      // y comprueba que quien sube es su autor. Se suben de uno en uno: en una red móvil, cinco
+      // subidas a la vez compiten por el mismo ancho de banda y todas tardan más.
+      const fallos: string[] = [];
+
+      for (const [indice, archivo] of archivos.entries()) {
+        setProgreso(`Subiendo adjuntos (${indice + 1} de ${archivos.length})…`);
+
+        try {
+          await subirAdjunto(publicado.id, archivo);
+        } catch (causa) {
+          // Un adjunto que falla no impide intentar los demás.
+          fallos.push(
+            causa instanceof Error ? causa.message : `No se pudo subir «${archivo.name}».`,
+          );
+        }
+      }
+
+      if (fallos.length === 0) {
+        navegar(`/?publicado=${publicado.id}`);
+        return;
+      }
+
+      setPublicadoConFallos(fallos);
+      setProgreso(null);
+      setEnviando(false);
     } catch (causa) {
       setError(causa instanceof ErrorDeApi ? causa.message : 'No se pudo publicar el Kudo.');
+      setProgreso(null);
       setEnviando(false);
     }
+  }
+
+  if (publicadoConFallos !== null) {
+    return (
+      <>
+        <h1>Reconocimiento publicado</h1>
+
+        <p>
+          El Kudo se publicó y la persona ya fue avisada, pero{' '}
+          {publicadoConFallos.length === 1
+            ? 'un adjunto no se pudo subir'
+            : 'algunos adjuntos no se pudieron subir'}
+          :
+        </p>
+
+        <ul className="error" role="alert">
+          {publicadoConFallos.map((motivo) => (
+            <li key={motivo}>{motivo}</li>
+          ))}
+        </ul>
+
+        <button
+          type="button"
+          onClick={() => {
+            navegar('/');
+          }}
+        >
+          Ir al muro
+        </button>
+      </>
+    );
   }
 
   return (
@@ -131,6 +218,39 @@ export function PublicarKudo() {
           </span>
         </p>
 
+        <p>
+          <label htmlFor={idAdjuntos}>Adjuntos (opcional)</label>
+          <input
+            id={idAdjuntos}
+            type="file"
+            multiple
+            accept={ACEPTAR}
+            onChange={alElegirArchivos}
+            disabled={enviando}
+            aria-describedby={`${idAdjuntos}-ayuda`}
+          />
+          <span id={`${idAdjuntos}-ayuda`}>
+            Hasta {MAXIMO_POR_KUDO} archivos: imágenes JPG, PNG o WebP y PDF, de máximo{' '}
+            {TAMANO_MAXIMO_BYTES / 1024 / 1024} MB cada uno.
+          </span>
+        </p>
+
+        {errorDeAdjuntos !== null && (
+          <p className="error" role="alert">
+            {errorDeAdjuntos}
+          </p>
+        )}
+
+        {archivos.length > 0 && (
+          <ul aria-label="Archivos seleccionados">
+            {archivos.map((archivo) => (
+              <li key={`${archivo.name}-${archivo.size}`}>
+                {archivo.name} <span className="meta">({tamanoLegible(archivo.size)})</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
         {error !== null && (
           <p className="error" role="alert">
             {error}
@@ -138,7 +258,7 @@ export function PublicarKudo() {
         )}
 
         <button type="submit" disabled={!puedeEnviar}>
-          {enviando ? 'Publicando…' : 'Publicar'}
+          {enviando ? (progreso ?? 'Publicando…') : 'Publicar'}
         </button>
       </form>
     </>
