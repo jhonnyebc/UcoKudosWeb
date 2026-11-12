@@ -2,7 +2,8 @@ import { useEffect, useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ErrorDeApi, pedir } from '../api/cliente';
-import type { Categoria, KudoPublicado } from '../api/tipos';
+import type { Categoria, KudoPublicado, PersonaBuscada } from '../api/tipos';
+import { BuscadorDePersonas } from '../componentes/BuscadorDePersonas';
 
 const LARGO_MAXIMO = 500;
 
@@ -26,7 +27,7 @@ export function PublicarKudo() {
 
   const [categorias, setCategorias] = useState<readonly Categoria[]>([]);
   const [categoriaId, setCategoriaId] = useState('');
-  const [destinatarioId, setDestinatarioId] = useState('');
+  const [destinatario, setDestinatario] = useState<PersonaBuscada | null>(null);
   const [contenido, setContenido] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function PublicarKudo() {
 
   const contenidoLimpio = contenido.trim();
   const puedeEnviar =
-    !enviando && categoriaId !== '' && destinatarioId !== '' && contenidoLimpio.length > 0;
+    !enviando && categoriaId !== '' && destinatario !== null && contenidoLimpio.length > 0;
 
   async function enviar(evento: React.FormEvent) {
     evento.preventDefault();
@@ -63,7 +64,7 @@ export function PublicarKudo() {
     try {
       const publicado = await pedir<KudoPublicado>('/kudos', {
         metodo: 'POST',
-        cuerpo: { destinatarioId, categoriaId, contenido: contenidoLimpio },
+        cuerpo: { destinatarioId: destinatario.id, categoriaId, contenido: contenidoLimpio },
       });
 
       navegar(`/?publicado=${publicado.id}`);
@@ -107,17 +108,7 @@ export function PublicarKudo() {
 
         <p>
           <label htmlFor={idDestinatario}>Persona reconocida</label>
-          {/* Provisional: hoy se pega el identificador porque la API todavía no ofrece una
-              búsqueda de personas. Pedirle un identificador a un usuario no es aceptable como
-              versión final; queda pendiente el buscador cuando exista el endpoint. */}
-          <input
-            id={idDestinatario}
-            type="text"
-            value={destinatarioId}
-            onChange={(e) => setDestinatarioId(e.target.value)}
-            autoComplete="off"
-            required
-          />
+          <BuscadorDePersonas id={idDestinatario} valor={destinatario} alElegir={setDestinatario} />
         </p>
 
         <p>

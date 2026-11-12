@@ -63,7 +63,13 @@ export default defineConfig({
   server: {
     port: 5174,
     proxy: {
-      '/api': { target: 'http://localhost:8082', changeOrigin: true },
+      // El destino sale del entorno (ADR-0018) con la API local como valor por omisión. Permite
+      // levantar el cliente contra la API ya desplegada cuando no se puede correr la de local,
+      // que es justo cuando más falta hace poder comprobar algo en un navegador de verdad.
+      '/api': {
+        target: process.env['API_URL'] ?? 'http://localhost:8082',
+        changeOrigin: true,
+      },
     },
   },
   test: {

@@ -68,3 +68,14 @@ export interface PaginaAvisos {
   readonly elementos: readonly Aviso[];
   readonly sinLeer: number;
 }
+
+/**
+ * Una persona en el buscador de destinatarios.
+ *
+ * Solo identificador y nombre: la API no devuelve el correo ni el celular en esta consulta, para
+ * que una caja de búsqueda no se convierta en un volcado del directorio de la universidad.
+ */
+export interface PersonaBuscada {
+  readonly id: string;
+  readonly nombreCompleto: string;
+}
