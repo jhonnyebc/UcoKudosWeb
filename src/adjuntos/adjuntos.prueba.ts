@@ -179,6 +179,23 @@ describe('subir un adjunto', () => {
     expect(JSON.stringify(llamadas[1])).not.toContain('token-secreto');
   });
 
+  it('dice qué archivo falló cuando la API rechaza pedir permiso, y no intenta subir nada', async () => {
+    const llamadas = fingirRed({
+      '/adjuntos/intencion': () =>
+        new Response(
+          JSON.stringify({ detail: 'Otra operación modificó este contenido al mismo tiempo.' }),
+          { status: 409 },
+        ),
+    });
+
+    await expect(subirAdjunto('k1', unArchivo('acta.pdf', 'application/pdf'))).rejects.toThrow(
+      /«acta.pdf» no se pudo adjuntar: Otra operación modificó/,
+    );
+
+    // Sin permiso no hay URL a la que subir: la única llamada es la que falló.
+    expect(llamadas).toHaveLength(1);
+  });
+
   it('dice en qué paso falló cuando el almacenamiento rechaza la subida', async () => {
     fingirRed({
       '/adjuntos/intencion': permiso,

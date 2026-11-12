@@ -75,14 +75,24 @@ export function tamanoLegible(bytes: number): string {
 export async function subirAdjunto(kudoId: string, archivo: File): Promise<void> {
   // Paso 1: pedir permiso. La API comprueba que quien pide es el autor del Kudo, el tipo declarado
   // y el tamaño declarado, y devuelve una URL firmada.
-  const permiso = await pedir<SubidaAdjunto>(`/kudos/${kudoId}/adjuntos/intencion`, {
-    metodo: 'POST',
-    cuerpo: {
-      nombreArchivo: archivo.name,
-      tipoDeclarado: archivo.type,
-      tamanoDeclarado: archivo.size,
-    },
-  });
+  //
+  // Se envuelve el error para que diga **qué archivo** falló: sin eso, con tres adjuntos, el mensaje
+  // «otra operación modificó este contenido» no permite saber a cuál se refiere ni si los demás
+  // llegaron. Lo delató el primer uso real desde un celular.
+  let permiso: SubidaAdjunto;
+  try {
+    permiso = await pedir<SubidaAdjunto>(`/kudos/${kudoId}/adjuntos/intencion`, {
+      metodo: 'POST',
+      cuerpo: {
+        nombreArchivo: archivo.name,
+        tipoDeclarado: archivo.type,
+        tamanoDeclarado: archivo.size,
+      },
+    });
+  } catch (causa) {
+    const motivo = causa instanceof ErrorDeApi ? causa.message : 'error desconocido';
+    throw new Error(`«${archivo.name}» no se pudo adjuntar: ${motivo}`);
+  }
 
   // Paso 2: subir directo al almacenamiento.
   //
