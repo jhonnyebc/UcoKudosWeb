@@ -5,8 +5,6 @@ import { ErrorDeApi, pedir } from '../api/cliente';
 import type { Categoria, KudoPublicado, PersonaBuscada } from '../api/tipos';
 import { BuscadorDePersonas } from '../componentes/BuscadorDePersonas';
 
-const LARGO_MAXIMO = 500;
-
 /**
  * Publicar un Kudo (RF-07): la funcionalidad obligatoria del enunciado.
  *
@@ -113,19 +111,23 @@ export function PublicarKudo() {
 
         <p>
           <label htmlFor={idContenido}>Mensaje</label>
+          {/* **Sin `maxLength` y sin recortar, a propósito.** El enunciado dice que el contenido
+              no tiene límite de longitud, y el dominio y la base lo respetan: la columna es
+              `text`, sin tope. Una versión anterior de esta pantalla cortaba a 500 caracteres,
+              así que la interfaz imponía una regla que el sistema no tiene, y lo hacía en
+              silencio: el texto de más se perdía sin aviso al pegarlo. */}
           <textarea
             id={idContenido}
             value={contenido}
-            onChange={(e) => setContenido(e.target.value.slice(0, LARGO_MAXIMO))}
+            onChange={(e) => setContenido(e.target.value)}
             rows={5}
-            maxLength={LARGO_MAXIMO}
             aria-describedby={`${idContenido}-cuenta`}
             required
           />
-          {/* aria-live para que quien usa lector de pantalla sepa cuánto le queda, pero "polite"
-              para que no interrumpa en cada letra. */}
+          {/* El contador informa, no limita. aria-live para que quien usa lector de pantalla lo
+              sepa, pero "polite" para que no interrumpa en cada letra. */}
           <span id={`${idContenido}-cuenta`} aria-live="polite">
-            {LARGO_MAXIMO - contenido.length} caracteres restantes
+            {contenido.length} {contenido.length === 1 ? 'carácter' : 'caracteres'}
           </span>
         </p>
 
