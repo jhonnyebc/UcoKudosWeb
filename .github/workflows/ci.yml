@@ -12,9 +12,12 @@ on:
 permissions:
   contents: read
 
+# Un push a main **no cancela** la ejecución que ya está en marcha: esa ejecución puede estar a mitad
+# de un despliegue, y cortarlo dejaría la máquina con la versión nueva a medias. Solo se cancelan las
+# de los pull requests, que no despliegan nada.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   cliente:
@@ -98,6 +101,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [cliente]
+    outputs:
+      etiqueta: ${{ steps.etiqueta.outputs.valor }}
     permissions:
       contents: read
       packages: write
@@ -143,3 +148,57 @@ jobs:
       - name: Publicar
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         run: docker push ghcr.io/${{ github.repository_owner }}/ucokudos-web:${{ steps.etiqueta.outputs.valor }}
+
+  # Despliegue en la máquina (ADR-0016, revisión del 2026-11-13). Solo desde main, y solo cuando la
+  # imagen se acaba de publicar. Despliega únicamente el cliente: la API conserva la versión que ya
+  # tenía, y su repositorio la despliega por su lado.
+  desplegar:
+    name: Desplegar el cliente en el servidor
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    needs: [imagen]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: produccion
+    # Un despliegue a la vez, y nunca se corta uno en marcha.
+    concurrency:
+      group: despliegue-produccion
+      cancel-in-progress: false
+    env:
+      CLAVE: ${{ secrets.DESPLIEGUE_SSH_KEY }}
+      SERVIDOR: ${{ secrets.DESPLIEGUE_HOST }}
+      USUARIO: ${{ secrets.DESPLIEGUE_USUARIO }}
+      HUELLA: ${{ secrets.DESPLIEGUE_HUELLA_DEL_SERVIDOR }}
+      ETIQUETA: ${{ needs.imagen.outputs.etiqueta }}
+    steps:
+      # Sin los secretos no se despliega, y **se dice en voz alta**: un trabajo que se omite en
+      # silencio deja la duda de si lo desplegado es lo último. La advertencia queda en el resumen.
+      - name: Comprobar que hay con qué desplegar
+        id: config
+        run: |
+          if [ -n "$CLAVE" ] && [ -n "$SERVIDOR" ] && [ -n "$USUARIO" ] && [ -n "$HUELLA" ]; then
+            echo "disponible=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "disponible=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Despliegue omitido::Faltan secretos del despliegue (DESPLIEGUE_SSH_KEY, DESPLIEGUE_HOST, DESPLIEGUE_USUARIO, DESPLIEGUE_HUELLA_DEL_SERVIDOR). La imagen se publicó pero NO se desplegó. Ver docs/MANUAL-PUESTA-A-PUNTO.md, sección 8.5."
+          fi
+
+      # La llave solo puede pedir «desplegar <api|web> <etiqueta>»: en el servidor es una llave de
+      # comando forzado (scripts/desplegar-desde-pipeline.sh), sin terminal ni reenvío de puertos.
+      # La huella del servidor va fijada: sin ella, un impostor en la red recibiría la orden.
+      - name: Desplegar `web` en el servidor
+        if: steps.config.outputs.disponible == 'true'
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$CLAVE" > ~/.ssh/despliegue
+          chmod 600 ~/.ssh/despliegue
+          printf '%s\n' "$HUELLA" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/despliegue \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$HOME/.ssh/known_hosts" \
+            -o ServerAliveInterval=20 \
+            "$USUARIO@$SERVIDOR" "desplegar web $ETIQUETA"
+
+      - name: Limpiar la llave
+        if: always()
+        run: rm -f ~/.ssh/despliegue
