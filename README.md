@@ -10,11 +10,11 @@ El back-end y toda la documentación de arquitectura están en [UcoKudos](https:
 
 **Los tres compromisos de QA-MOV-01**, y cómo se comprueba cada uno:
 
-| Compromiso                                                  | Cómo se verifica                         | Estado             |
-| ----------------------------------------------------------- | ---------------------------------------- | ------------------ |
-| Carga inicial por debajo de 300 KB comprimidos              | `npm run peso`, que falla si se supera   | **65 KB**          |
+| Compromiso                                                  | Cómo se verifica                         | Estado                                     |
+| ----------------------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| Carga inicial por debajo de 300 KB comprimidos              | `npm run peso`, que falla si se supera   | **65 KB**                                  |
 | Primera pantalla útil en menos de 2,5 s en red móvil        | Pruebas de punta a punta en navegador    | **No medido**: no hay pruebas en navegador |
-| Objetivos táctiles de 44 px y sin desplazamiento horizontal | Estilos base y revisión en pantalla real | Base puesta        |
+| Objetivos táctiles de 44 px y sin desplazamiento horizontal | Estilos base y revisión en pantalla real | Base puesta                                |
 
 **El token de sesión vive en memoria y en ningún otro sitio.** Un token en `localStorage` queda al alcance de cualquier script inyectado; el precio de tenerlo en memoria es perder la sesión al recargar, y se paga a gusto. Hay una regla del analizador que impide usar el almacenamiento del navegador, para que no se cuele en un descuido.
 
