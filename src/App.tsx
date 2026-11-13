@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
 import { useRestaurarSesion } from './autenticacion/useRestaurarSesion';
-import { BarraDeSesion } from './componentes/BarraDeSesion';
+import { Cabecera } from './componentes/Cabecera';
 import { ExigeSesion } from './componentes/ExigeSesion';
 import { Muro } from './paginas/Muro';
 
@@ -43,6 +43,8 @@ export function App() {
         Saltar al contenido
       </a>
 
+      <Cabecera />
+
       <nav className="navegacion" aria-label="Principal">
         <NavLink to="/" end>
           Muro
@@ -54,8 +56,6 @@ export function App() {
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
-        <BarraDeSesion />
-
         <Suspense fallback={<p role="status">Cargando…</p>}>
           <Routes>
             {/* El muro también exige sesión, porque la API lo exige: es una plataforma interna de

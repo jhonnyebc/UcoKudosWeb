@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 import { useSesion } from '../autenticacion/useSesion';
+import { MarcaKudos } from './MarcaKudos';
 
 /**
  * Envuelve lo que solo tiene sentido con la sesión iniciada.
@@ -28,15 +29,22 @@ export function ExigeSesion({ children, que }: { children: ReactNode; que: strin
   }
 
   return (
-    <>
+    <section className="portada">
+      <MarcaKudos grande />
+
+      <h1 className="portada__titulo">Reconoce a quien hace grande a la UCO</h1>
+      <p className="portada__texto">
+        Un lugar para agradecer, celebrar y dejar constancia del trabajo de la comunidad.
+      </p>
+
       <p>Para {que} necesitas iniciar sesión.</p>
 
       {/* El texto incluye la acción a propósito. Con un «Entrar» a secas habría dos botones de
           nombre idéntico en la misma pantalla —este y el de la barra—, y para quien navega con
           lector de pantalla dos controles con el mismo nombre son indistinguibles. */}
-      <button type="button" onClick={entrar}>
+      <button type="button" className="boton-grande" onClick={entrar}>
         Entrar para {que}
       </button>
-    </>
+    </section>
   );
 }

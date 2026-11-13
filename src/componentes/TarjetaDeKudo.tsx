@@ -12,14 +12,22 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
   const fecha = new Date(kudo.publicadoEn);
 
   return (
-    <article className="tarjeta">
-      <h2>
-        {kudo.autorNombre} reconoció a {kudo.destinatarioNombre}
-      </h2>
+    <article className="tarjeta tarjeta-kudo">
+      <div className="tarjeta-kudo__encabezado">
+        {/* Decorativo: el nombre completo ya está en el título. */}
+        <span className="avatar" aria-hidden="true">
+          {iniciales(kudo.destinatarioNombre)}
+        </span>
 
-      <p className="categoria">{kudo.categoriaNombre}</p>
+        <div>
+          <h2>
+            {kudo.autorNombre} reconoció a {kudo.destinatarioNombre}
+          </h2>
+          <p className="categoria">{kudo.categoriaNombre}</p>
+        </div>
+      </div>
 
-      <p>{kudo.contenido}</p>
+      <p className="tarjeta-kudo__contenido">{kudo.contenido}</p>
 
       {/* La fecha legible para la persona, y la exacta en el atributo para quien la necesite. */}
       <p className="meta">
@@ -44,6 +52,15 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
       {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
     </article>
   );
+}
+
+/** Las iniciales para el avatar: la primera letra del primer y del último nombre. */
+function iniciales(nombre: string): string {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean);
+  const primera = partes[0]?.[0] ?? '?';
+  const ultima = partes.length > 1 ? (partes[partes.length - 1]?.[0] ?? '') : '';
+
+  return (primera + ultima).toUpperCase();
 }
 
 /**

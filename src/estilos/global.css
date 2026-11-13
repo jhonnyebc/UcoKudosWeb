@@ -445,3 +445,222 @@ label {
 .acciones {
   margin-bottom: 0;
 }
+
+/* ------------------------------------------------------------------------------------------
+   Identidad visual: cabecera con el escudo de la UCO y la marca de Kudos, portada de entrada y
+   tarjetas del muro. Verde institucional con acento dorado, el de la estrella del escudo.
+   ------------------------------------------------------------------------------------------ */
+
+:root {
+  --color-acento: #f5c518;
+  --color-marca-claro: #e8f3ed;
+  --sombra: 0 1px 2px rgb(0 0 0 / 6%), 0 4px 14px rgb(11 93 59 / 8%);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-3);
+  padding-top: calc(var(--espacio-2) + env(safe-area-inset-top));
+  background: var(--color-fondo);
+
+  /* La franja dorada inferior: el toque de color del escudo, sin recargar. */
+  border-bottom: 4px solid var(--color-acento);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
+}
+
+.cabecera__marcas {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-width: 0;
+}
+
+.cabecera__separador {
+  width: 1px;
+  align-self: stretch;
+  min-height: 28px;
+  background: var(--color-borde);
+}
+
+/* El logo trae mucho blanco alrededor: se recorta a lo que dibuja. La imagen es cuadrada de 501 px
+   y el dibujo ocupa aproximadamente el 88 % del ancho y el 31 % del alto, centrado. */
+.logo-uco {
+  display: block;
+  width: 104px;
+  aspect-ratio: 440 / 150;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.logo-uco img {
+  display: block;
+  width: 114%;
+  max-width: none;
+  height: auto;
+  margin-left: -6.8%;
+  margin-top: -39.5%;
+}
+
+.marca-kudos {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.marca-kudos__insignia {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 3px rgb(11 93 59 / 30%));
+}
+
+.marca-kudos__texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.marca-kudos__nombre {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-marca);
+}
+
+.marca-kudos__lema {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-texto-suave);
+}
+
+.marca-kudos--grande .marca-kudos__insignia {
+  width: 72px;
+  height: 72px;
+}
+
+.marca-kudos--grande .marca-kudos__nombre {
+  font-size: 2.25rem;
+}
+
+.marca-kudos--grande .marca-kudos__lema {
+  font-size: 0.75rem;
+}
+
+/* En la cabecera la barra de sesión no necesita su propio margen. */
+.cabecera .barra-sesion {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+/* En pantallas estrechas el lema sobra: el escudo, la marca y el botón tienen que caber. */
+@media (max-width: 30rem) {
+  .logo-uco {
+    width: 76px;
+  }
+
+  .marca-kudos__lema,
+  .cabecera__separador {
+    display: none;
+  }
+
+  .cabecera .barra-sesion__nombre {
+    display: none;
+  }
+}
+
+.portada {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-4);
+  padding: var(--espacio-5) var(--espacio-4);
+  border-radius: calc(var(--radio) * 2);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(245 197 24 / 22%), transparent 45%),
+    linear-gradient(160deg, var(--color-marca-claro), #ffffff 70%);
+  border: 1px solid var(--color-borde);
+  box-shadow: var(--sombra);
+}
+
+.portada__titulo {
+  margin: 0;
+  font-size: 1.625rem;
+  line-height: 1.2;
+  color: var(--color-marca-oscuro);
+}
+
+.portada__texto {
+  margin: 0;
+  max-width: 28rem;
+  color: var(--color-texto-suave);
+}
+
+.portada p {
+  margin: 0;
+}
+
+button.boton-grande {
+  min-height: 52px;
+  padding: var(--espacio-2) var(--espacio-5);
+  font-size: 1.0625rem;
+  box-shadow: 0 4px 12px rgb(11 93 59 / 30%);
+}
+
+.subtitulo {
+  margin: calc(var(--espacio-2) * -1) 0 var(--espacio-3);
+  color: var(--color-texto-suave);
+}
+
+.tarjeta-kudo {
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-left: 5px solid var(--color-acento);
+  box-shadow: var(--sombra);
+}
+
+.tarjeta-kudo__encabezado {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-2);
+}
+
+.tarjeta-kudo__encabezado h2 {
+  margin-bottom: var(--espacio-1);
+}
+
+.tarjeta-kudo__encabezado .categoria {
+  display: inline-block;
+  margin: 0;
+  padding: 2px var(--espacio-2);
+  border-radius: 999px;
+  background: var(--color-marca-claro);
+  font-size: 0.8125rem;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #12794d, #084a2d);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  letter-spacing: 0.02em;
+}
+
+.tarjeta-kudo__contenido {
+  margin: 0 0 var(--espacio-2);
+  overflow-wrap: anywhere;
+}

@@ -75,6 +75,7 @@ export function Muro() {
   return (
     <>
       <h1>Muro</h1>
+      <p className="subtitulo">Lo último que la comunidad UCO se ha reconocido.</p>
 
       {/* feed + aria-busy: el lector de pantalla anuncia lo que se añade al final sin interrumpir
           la lectura de lo que ya estaba. */}
