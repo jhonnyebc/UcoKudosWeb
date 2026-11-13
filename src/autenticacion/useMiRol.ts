@@ -74,6 +74,27 @@ export function administraEstructura(rol: string | null): boolean {
   return rol === 'Administrador del Sistema' || rol === 'Rector' || rol === 'Coordinador Académico';
 }
 
+/**
+ * Los roles que cada rol puede asignar: la cadena del enunciado, la misma de las aprobaciones. Es
+ * comodidad para no ofrecer lo que la API rechazaría; la regla la aplica la API.
+ */
+export function rolesQueAsigna(rol: string | null): readonly string[] {
+  switch (rol) {
+    case 'Coordinador de Programa':
+      return ['Docente', 'Estudiante'];
+    case 'Coordinador de Facultad':
+      return ['Coordinador de Programa'];
+    case 'Coordinador Académico':
+      return ['Coordinador de Facultad'];
+    case 'Rector':
+      return ['Coordinador Académico'];
+    case 'Administrador del Sistema':
+      return ['Rector', 'Administrador del Sistema'];
+    default:
+      return [];
+  }
+}
+
 /** Para las pruebas: olvida lo guardado. */
 export function olvidarRoles(): void {
   consultas.clear();

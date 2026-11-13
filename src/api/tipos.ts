@@ -225,3 +225,12 @@ export interface Indicadores {
   readonly masReconocidos: readonly Conteo[];
   readonly masReconocen: readonly Conteo[];
 }
+
+/** Una persona que quien consulta administra. */
+export interface UsuarioAdministrado {
+  readonly id: string;
+  readonly nombreCompleto: string;
+  readonly correoInstitucional: string;
+  readonly rol: string;
+  readonly estadoCuenta: string;
+}
