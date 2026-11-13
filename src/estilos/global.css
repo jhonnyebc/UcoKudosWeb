@@ -764,3 +764,40 @@ button.estrella:disabled {
   background: transparent;
   color: var(--color-texto-suave);
 }
+
+/* Respuestas anidadas: la sangría la pone la profundidad, con un tope para que quepa en un celular. */
+.hilo {
+  margin-top: var(--espacio-2);
+}
+
+.lista-replicas {
+  list-style: none;
+  margin: var(--espacio-3) 0 0;
+  padding: 0;
+}
+
+.replica {
+  margin-bottom: var(--espacio-2);
+}
+
+.tarjeta-replica {
+  padding: var(--espacio-2) var(--espacio-3);
+  border-left: 3px solid var(--color-borde);
+  background: var(--color-superficie);
+  border-radius: 0 var(--radio) var(--radio) 0;
+}
+
+.tarjeta-replica__autor {
+  margin: 0 0 var(--espacio-1);
+}
+
+.formulario-respuesta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-2);
+}
+
+.formulario-respuesta textarea {
+  min-height: 4rem;
+}

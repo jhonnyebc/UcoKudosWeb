@@ -47,10 +47,11 @@ describe('TarjetaDeKudo', () => {
 
   it('usa singular y plural correctamente', () => {
     const { rerender } = render(<TarjetaDeKudo kudo={unKudo({ totalReplicas: 1 })} />);
-    expect(screen.getByText(/1 respuesta$/)).toBeInTheDocument();
+    // El conteo es el botón que abre el hilo, y su nombre dice cuántas hay.
+    expect(screen.getByRole('button', { name: /Ver 1 respuesta$/ })).toBeInTheDocument();
 
     rerender(<TarjetaDeKudo kudo={unKudo({ totalReplicas: 4 })} />);
-    expect(screen.getByText(/4 respuestas$/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver 4 respuestas$/ })).toBeInTheDocument();
   });
 
   it('da la fecha también en formato legible por máquina', () => {

@@ -4,6 +4,7 @@ import type { KudoDelMuro } from '../api/tipos';
 import { AccionesDeModeracion } from './AccionesDeModeracion';
 import { AdjuntosDeKudo } from './AdjuntosDeKudo';
 import { Calificador } from './Calificador';
+import { HiloDeKudo } from './HiloDeKudo';
 
 /**
  * Un Kudo en el muro.
@@ -47,22 +48,17 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
       {/* La fecha legible para la persona, y la exacta en el atributo para quien la necesite. */}
       <p className="meta">
         <time dateTime={kudo.publicadoEn}>{fechaLegible(fecha)}</time>
-
-        {kudo.totalReplicas > 0 && (
-          <span>
-            {' · '}
-            {kudo.totalReplicas} {kudo.totalReplicas === 1 ? 'respuesta' : 'respuestas'}
-          </span>
-        )}
       </p>
 
       <Calificador
-        kudoId={kudo.id}
+        contenidoId={kudo.id}
         promedio={kudo.promedioCalificacion}
         total={kudo.totalCalificaciones}
       />
 
       {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
+
+      <HiloDeKudo kudoId={kudo.id} total={kudo.totalReplicas} />
 
       <AccionesDeModeracion tipo="Kudo" contenidoId={kudo.id} alVetar={() => setRetirado(true)} />
     </article>

@@ -156,3 +156,18 @@ export interface ReportePendiente {
   readonly contenido: string;
   readonly presentadoEn: string;
 }
+
+/** Una respuesta del hilo de un Kudo. La profundidad es para la sangría: el hilo llega ya ordenado. */
+export interface Replica {
+  readonly id: string;
+  readonly kudoId: string;
+  readonly replicaPadreId: string | null;
+  readonly autorId: string;
+  readonly autorNombre: string;
+  readonly contenido: string;
+  readonly profundidad: number;
+  readonly totalReplicas: number;
+  readonly promedioCalificacion: number | null;
+  readonly totalCalificaciones: number;
+  readonly publicadaEn: string;
+}

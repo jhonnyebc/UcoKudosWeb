@@ -44,7 +44,7 @@ afterEach(() => {
 
 describe('Calificador', () => {
   it('ofrece cinco estrellas con su nombre completo', () => {
-    render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    render(<Calificador contenidoId="k1" promedio={null} total={0} />);
 
     expect(screen.getByRole('button', { name: 'Calificar con 1 estrella' })).toBeDefined();
     for (const n of [2, 3, 4, 5]) {
@@ -55,11 +55,11 @@ describe('Calificador', () => {
   });
 
   it('dice que no hay calificaciones, o el promedio y el total si los hay', () => {
-    const { unmount } = render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    const { unmount } = render(<Calificador contenidoId="k1" promedio={null} total={0} />);
     expect(screen.getByText('Sin calificaciones todavía')).toBeDefined();
     unmount();
 
-    render(<Calificador kudoId="k1" promedio={4.5} total={2} />);
+    render(<Calificador contenidoId="k1" promedio={4.5} total={2} />);
     expect(screen.getByText(/4\.5 de 5/)).toBeDefined();
     expect(
       screen.getByText(/2 calificaciones/, { selector: '[aria-hidden="true"]' }),
@@ -73,7 +73,7 @@ describe('Calificador', () => {
         json({ kudo: { promedioCalificacion: 4.0, totalCalificaciones: 3 }, adjuntos: [] }),
     });
 
-    render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    render(<Calificador contenidoId="k1" promedio={null} total={0} />);
     await userEvent.click(screen.getByRole('button', { name: 'Calificar con 4 estrellas' }));
 
     // El promedio sale del servidor, no de una cuenta hecha aquí.
@@ -92,7 +92,7 @@ describe('Calificador', () => {
         json({ kudo: { promedioCalificacion: 3.0, totalCalificaciones: 1 }, adjuntos: [] }),
     });
 
-    render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    render(<Calificador contenidoId="k1" promedio={null} total={0} />);
     await userEvent.click(screen.getByRole('button', { name: 'Calificar con 3 estrellas' }));
 
     await waitFor(() => {
@@ -116,7 +116,7 @@ describe('Calificador', () => {
         json({ kudo: { promedioCalificacion: 2.0, totalCalificaciones: 1 }, adjuntos: [] }),
     });
 
-    render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    render(<Calificador contenidoId="k1" promedio={null} total={0} />);
     await userEvent.click(screen.getByRole('button', { name: 'Calificar con 5 estrellas' }));
     await screen.findByText(/de 5/);
     await userEvent.click(screen.getByRole('button', { name: 'Calificar con 2 estrellas' }));
@@ -135,7 +135,7 @@ describe('Calificador', () => {
         ),
     });
 
-    render(<Calificador kudoId="k1" promedio={null} total={0} />);
+    render(<Calificador contenidoId="k1" promedio={null} total={0} />);
     await userEvent.click(screen.getByRole('button', { name: 'Calificar con 5 estrellas' }));
 
     expect(await screen.findByText(/retirado por moderación/)).toBeDefined();
@@ -147,7 +147,7 @@ describe('Calificador', () => {
   });
 
   it('no tiene problemas de accesibilidad detectables en la estructura', async () => {
-    const { container } = render(<Calificador kudoId="k1" promedio={4.5} total={2} />);
+    const { container } = render(<Calificador contenidoId="k1" promedio={4.5} total={2} />);
 
     expect(
       await axe(container, { rules: { 'color-contrast': { enabled: false } } }),

@@ -3,10 +3,23 @@ import { useState } from 'react';
 import { ErrorDeApi, pedir } from '../api/cliente';
 import type { DetalleKudo } from '../api/tipos';
 
-interface Props {
-  readonly kudoId: string;
+interface Resumen {
   readonly promedio: number | null;
   readonly total: number;
+}
+
+interface Props {
+  /** Identificador del contenido calificado: un Kudo o una réplica. */
+  readonly contenidoId: string;
+  readonly tipo?: 'Kudo' | 'Replica';
+  readonly promedio: number | null;
+  readonly total: number;
+
+  /**
+   * Cómo volver a pedir el resumen tras calificar. Por omisión, el Kudo mismo; una réplica no tiene
+   * una consulta propia, así que quien la pinta dice cómo.
+   */
+  readonly leerResumen?: () => Promise<Resumen>;
 }
 
 const ESTRELLAS = [1, 2, 3, 4, 5] as const;
@@ -22,7 +35,7 @@ const ESTRELLAS = [1, 2, 3, 4, 5] as const;
  * no cuenta dos veces a la misma persona. Tras calificar se vuelve a pedir el Kudo para enseñar el
  * promedio que calculó el servidor, en lugar de calcularlo aquí y arriesgarse a que no coincida.
  */
-export function Calificador({ kudoId, promedio, total }: Props) {
+export function Calificador({ contenidoId, tipo = 'Kudo', promedio, total, leerResumen }: Props) {
   const [resumen, setResumen] = useState({ promedio, total });
   const [mia, setMia] = useState<number | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -35,15 +48,19 @@ export function Calificador({ kudoId, promedio, total }: Props) {
     try {
       await pedir('/interaccion/calificaciones', {
         metodo: 'POST',
-        cuerpo: { tipoContenido: 'Kudo', contenidoId: kudoId, estrellas },
+        cuerpo: { tipoContenido: tipo, contenidoId, estrellas },
       });
       setMia(estrellas);
 
-      const detalle = await pedir<DetalleKudo>(`/kudos/${kudoId}`);
-      setResumen({
-        promedio: detalle.kudo.promedioCalificacion,
-        total: detalle.kudo.totalCalificaciones,
-      });
+      if (leerResumen !== undefined) {
+        setResumen(await leerResumen());
+      } else {
+        const detalle = await pedir<DetalleKudo>(`/kudos/${contenidoId}`);
+        setResumen({
+          promedio: detalle.kudo.promedioCalificacion,
+          total: detalle.kudo.totalCalificaciones,
+        });
+      }
     } catch (causa) {
       setError(causa instanceof ErrorDeApi ? causa.message : 'No se pudo enviar tu calificación.');
     } finally {
