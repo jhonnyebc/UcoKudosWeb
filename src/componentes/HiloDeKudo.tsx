@@ -1,4 +1,4 @@
-import { type FormEvent, useCallback, useId, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useId, useState } from 'react';
 
 import { ErrorDeApi, pedir } from '../api/cliente';
 import type { Replica } from '../api/tipos';
@@ -8,6 +8,9 @@ import { Calificador } from './Calificador';
 interface Props {
   readonly kudoId: string;
   readonly total: number;
+
+  /** Abre el hilo al pintarse: lo usa la pantalla de detalle, donde las respuestas son el contenido. */
+  readonly abiertoInicial?: boolean;
 }
 
 /** Más allá de esta profundidad la sangría deja de crecer: en un celular no cabría. */
@@ -24,10 +27,10 @@ const SANGRIA_MAXIMA = 5;
  * «Replica». El veto de una respuesta oculta también las que cuelgan de ella, y al recargar el hilo
  * ya no llegan.
  */
-export function HiloDeKudo({ kudoId, total }: Props) {
+export function HiloDeKudo({ kudoId, total, abiertoInicial = false }: Props) {
   const idPanel = useId();
 
-  const [abierto, setAbierto] = useState(false);
+  const [abierto, setAbierto] = useState(abiertoInicial);
   const [hilo, setHilo] = useState<readonly Replica[] | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,12 @@ export function HiloDeKudo({ kudoId, total }: Props) {
       setCargando(false);
     }
   }, [kudoId]);
+
+  useEffect(() => {
+    if (abiertoInicial) {
+      void cargar();
+    }
+  }, [abiertoInicial, cargar]);
 
   async function alternar() {
     const quedaAbierto = !abierto;

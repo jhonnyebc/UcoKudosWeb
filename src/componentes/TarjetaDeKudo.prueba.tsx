@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { axe } from 'vitest-axe';
 
@@ -26,7 +27,11 @@ function unKudo(cambios: Partial<KudoDelMuro> = {}): KudoDelMuro {
 
 describe('TarjetaDeKudo', () => {
   it('dice quién reconoció a quién, en qué categoría y por qué', () => {
-    render(<TarjetaDeKudo kudo={unKudo()} />);
+    render(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo()} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText(/Ana Gómez reconoció a Luis Pérez/)).toBeInTheDocument();
     expect(screen.getByText('Trabajo en Equipo')).toBeInTheDocument();
@@ -39,24 +44,40 @@ describe('TarjetaDeKudo', () => {
    */
   it('no interpreta el contenido como HTML', () => {
     const malicioso = '<img src=x onerror="robar()"> hola';
-    const { container } = render(<TarjetaDeKudo kudo={unKudo({ contenido: malicioso })} />);
+    const { container } = render(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo({ contenido: malicioso })} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText(malicioso)).toBeInTheDocument();
     expect(container.querySelector('img')).toBeNull();
   });
 
   it('usa singular y plural correctamente', () => {
-    const { rerender } = render(<TarjetaDeKudo kudo={unKudo({ totalReplicas: 1 })} />);
+    const { rerender } = render(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo({ totalReplicas: 1 })} />
+      </MemoryRouter>,
+    );
     // El conteo es el botón que abre el hilo, y su nombre dice cuántas hay.
     expect(screen.getByRole('button', { name: /Ver 1 respuesta$/ })).toBeInTheDocument();
 
-    rerender(<TarjetaDeKudo kudo={unKudo({ totalReplicas: 4 })} />);
+    rerender(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo({ totalReplicas: 4 })} />
+      </MemoryRouter>,
+    );
     expect(screen.getByRole('button', { name: /Ver 4 respuestas$/ })).toBeInTheDocument();
   });
 
   it('da la fecha también en formato legible por máquina', () => {
     const publicadoEn = '2026-11-01T15:30:00.000Z';
-    render(<TarjetaDeKudo kudo={unKudo({ publicadoEn })} />);
+    render(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo({ publicadoEn })} />
+      </MemoryRouter>,
+    );
 
     const tiempo = screen.getByText(/noviembre/);
     expect(tiempo).toHaveAttribute('datetime', publicadoEn);
@@ -76,7 +97,11 @@ describe('TarjetaDeKudo', () => {
    * asignado, y no tapado.
    */
   it('no tiene problemas de accesibilidad detectables en la estructura', async () => {
-    const { container } = render(<TarjetaDeKudo kudo={unKudo()} />);
+    const { container } = render(
+      <MemoryRouter>
+        <TarjetaDeKudo kudo={unKudo()} />
+      </MemoryRouter>,
+    );
 
     const resultado = await axe(container, {
       rules: { 'color-contrast': { enabled: false } },

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import type { KudoDelMuro } from '../api/tipos';
 import { AccionesDeModeracion } from './AccionesDeModeracion';
@@ -13,7 +14,13 @@ import { HiloDeKudo } from './HiloDeKudo';
  * usa nada que lo evite: el texto lo escribe un usuario, así que tratarlo como marcado sería abrir
  * la puerta a que alguien inyecte código en la pantalla de los demás.
  */
-export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
+export function TarjetaDeKudo({
+  kudo,
+  enDetalle = false,
+}: {
+  kudo: KudoDelMuro;
+  enDetalle?: boolean;
+}) {
   const fecha = new Date(kudo.publicadoEn);
   const [retirado, setRetirado] = useState(false);
 
@@ -37,7 +44,15 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
 
         <div>
           <h2>
-            {kudo.autorNombre} reconoció a {kudo.destinatarioNombre}
+            {enDetalle ? (
+              <>
+                {kudo.autorNombre} reconoció a {kudo.destinatarioNombre}
+              </>
+            ) : (
+              <Link to={`/kudos/${kudo.id}`} className="enlace-titulo">
+                {kudo.autorNombre} reconoció a {kudo.destinatarioNombre}
+              </Link>
+            )}
           </h2>
           <p className="categoria">{kudo.categoriaNombre}</p>
         </div>
@@ -58,7 +73,7 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
 
       {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
 
-      <HiloDeKudo kudoId={kudo.id} total={kudo.totalReplicas} />
+      <HiloDeKudo kudoId={kudo.id} total={kudo.totalReplicas} abiertoInicial={enDetalle} />
 
       <AccionesDeModeracion tipo="Kudo" contenidoId={kudo.id} alVetar={() => setRetirado(true)} />
     </article>

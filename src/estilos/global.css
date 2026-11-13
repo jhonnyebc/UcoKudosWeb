@@ -826,3 +826,14 @@ button.estrella:disabled {
   gap: var(--espacio-2);
   width: 100%;
 }
+
+/* El título de una tarjeta del muro lleva al detalle sin parecer un enlace suelto. */
+a.enlace-titulo {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.enlace-titulo:hover,
+a.enlace-titulo:focus-visible {
+  text-decoration: underline;
+}

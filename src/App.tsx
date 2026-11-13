@@ -37,6 +37,9 @@ const Solicitudes = lazy(() =>
 const Moderacion = lazy(() =>
   import('./paginas/Moderacion').then((m) => ({ default: m.Moderacion })),
 );
+const DetalleDeKudo = lazy(() =>
+  import('./paginas/DetalleDeKudo').then((m) => ({ default: m.DetalleDeKudo })),
+);
 const Programas = lazy(() => import('./paginas/Programas').then((m) => ({ default: m.Programas })));
 const Estructura = lazy(() =>
   import('./paginas/Estructura').then((m) => ({ default: m.Estructura })),
@@ -143,6 +146,15 @@ export function App() {
               element={
                 <ExigeSesion que="moderar los reportes">
                   <Moderacion />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/kudos/:id"
+              element={
+                <ExigeSesion que="ver el reconocimiento">
+                  <DetalleDeKudo />
                 </ExigeSesion>
               }
             />
