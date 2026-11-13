@@ -1,4 +1,7 @@
+import { useState } from 'react';
+
 import type { KudoDelMuro } from '../api/tipos';
+import { AccionesDeModeracion } from './AccionesDeModeracion';
 import { AdjuntosDeKudo } from './AdjuntosDeKudo';
 
 /**
@@ -10,6 +13,17 @@ import { AdjuntosDeKudo } from './AdjuntosDeKudo';
  */
 export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
   const fecha = new Date(kudo.publicadoEn);
+  const [retirado, setRetirado] = useState(false);
+
+  // Vetado desde aquí: se retira de la pantalla sin recargar el muro. Lo que decide si es visible
+  // para los demás es el servidor, que ya no lo devuelve.
+  if (retirado) {
+    return (
+      <article className="tarjeta tarjeta-kudo">
+        <p role="status">Este reconocimiento fue vetado y ya no se muestra.</p>
+      </article>
+    );
+  }
 
   return (
     <article className="tarjeta tarjeta-kudo">
@@ -50,6 +64,8 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
       </p>
 
       {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
+
+      <AccionesDeModeracion tipo="Kudo" contenidoId={kudo.id} alVetar={() => setRetirado(true)} />
     </article>
   );
 }

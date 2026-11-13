@@ -155,11 +155,12 @@ async function enviar(
 export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): Promise<T> {
   const respuesta = await enviar(ruta, opciones, 'application/json');
 
-  if (respuesta.status === 204) {
-    return undefined as T;
-  }
+  // Una respuesta sin cuerpo no es un error: 204 «sin contenido» y 202 «aceptado» (reportar) llegan
+  // vacías. Intentar leerlas como JSON lanzaba, y la pantalla decía «no se pudo enviar» de algo que
+  // sí se había enviado. Lo encontraron las pruebas del botón «Reportar».
+  const texto = await respuesta.text();
 
-  return (await respuesta.json()) as T;
+  return (texto === '' ? undefined : JSON.parse(texto)) as T;
 }
 
 /** Descarga un archivo con la sesión de quien lo pide, como `Blob`. */

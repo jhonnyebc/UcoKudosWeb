@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
-import { apruebaSolicitudes, useMiRol } from './autenticacion/useMiRol';
+import { apruebaSolicitudes, puedeVetar, useMiRol } from './autenticacion/useMiRol';
 import { useRestaurarSesion } from './autenticacion/useRestaurarSesion';
 import { Cabecera } from './componentes/Cabecera';
 import { ExigeSesion } from './componentes/ExigeSesion';
@@ -28,6 +28,9 @@ const Registro = lazy(() => import('./paginas/Registro').then((m) => ({ default:
 const Verificar = lazy(() => import('./paginas/Verificar').then((m) => ({ default: m.Verificar })));
 const Solicitudes = lazy(() =>
   import('./paginas/Solicitudes').then((m) => ({ default: m.Solicitudes })),
+);
+const Moderacion = lazy(() =>
+  import('./paginas/Moderacion').then((m) => ({ default: m.Moderacion })),
 );
 
 export function App() {
@@ -61,6 +64,7 @@ export function App() {
         <NavLink to="/categorias">Categorías</NavLink>
         <NavLink to="/auditoria">Auditoría</NavLink>
         {apruebaSolicitudes(rol) && <NavLink to="/solicitudes">Cuentas</NavLink>}
+        {puedeVetar(rol) && <NavLink to="/moderacion">Moderación</NavLink>}
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
@@ -119,6 +123,15 @@ export function App() {
               element={
                 <ExigeSesion que="resolver las solicitudes de cuenta">
                   <Solicitudes />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/moderacion"
+              element={
+                <ExigeSesion que="moderar los reportes">
+                  <Moderacion />
                 </ExigeSesion>
               }
             />

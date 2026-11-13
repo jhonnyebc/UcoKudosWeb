@@ -701,3 +701,35 @@ button.boton-grande {
   color: var(--color-marca-oscuro);
   font-weight: 600;
 }
+
+/* Moderación: reportar, vetar y la bandeja de reportes. */
+button.peligro {
+  background: var(--color-error);
+}
+
+button.peligro:disabled {
+  background: var(--color-borde);
+}
+
+.formulario-moderacion {
+  margin-top: var(--espacio-3);
+}
+
+.contenido-reportado {
+  margin: 0 0 var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-3);
+  border-left: 4px solid var(--color-borde);
+  background: var(--color-superficie);
+  overflow-wrap: anywhere;
+}
+
+/* Con siete pestañas en un celular no caben todas: la barra se desplaza en lugar de apretarlas. */
+.navegacion {
+  overflow-x: auto;
+}
+
+.navegacion a {
+  flex: 1 0 auto;
+  padding-left: var(--espacio-2);
+  padding-right: var(--espacio-2);
+}

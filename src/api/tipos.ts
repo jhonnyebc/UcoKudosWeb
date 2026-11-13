@@ -144,3 +144,15 @@ export interface EstadoRegistro {
   readonly solicitudAprobada: boolean;
   readonly estadoCuenta: string;
 }
+
+/** Un reporte que espera decisión, con el contenido reportado a la vista. */
+export interface ReportePendiente {
+  readonly id: string;
+  readonly tipoContenido: 'Kudo' | 'Replica';
+  readonly contenidoId: string;
+  readonly motivo: string;
+  readonly reportadoPor: string;
+  readonly autorDelContenido: string;
+  readonly contenido: string;
+  readonly presentadoEn: string;
+}
