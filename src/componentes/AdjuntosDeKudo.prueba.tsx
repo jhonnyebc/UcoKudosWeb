@@ -105,17 +105,20 @@ describe('AdjuntosDeKudo', () => {
   });
 
   /**
-   * La ventana se abre antes de pedir el enlace. Si se abriera después de esperar a la red, Safari
+   * La ventana se abre antes de descargar. Si se abriera después de esperar a la red, Safari
    * en el celular la bloquearía como emergente, y el celular es el 90 % de los usuarios.
    */
-  it('abre la ventana antes de pedir el enlace y la dirige al archivo', async () => {
+  it('abre la ventana antes de descargar y la dirige al archivo', async () => {
     const ventana = { opener: 'pagina' as unknown, location: { href: '' }, close: vi.fn() };
     const abrir = vi.fn(() => ventana);
     vi.stubGlobal('open', abrir);
+    // jsdom no implementa las URL locales de Blob.
+    URL.createObjectURL = vi.fn(() => 'blob:local/acta');
+    URL.revokeObjectURL = vi.fn();
 
     fingirRed({
-      '/kudos/k1/adjuntos/a1/descarga': () =>
-        new Response(JSON.stringify({ url: 'https://x.test/adjuntos/k/a?X-Amz-Signature=z' })),
+      '/kudos/k1/adjuntos/a1/archivo': () =>
+        new Response('%PDF-1.7', { headers: { 'Content-Type': 'application/pdf' } }),
       '/kudos/k1': () => new Response(JSON.stringify(DETALLE)),
     });
 
@@ -124,15 +127,15 @@ describe('AdjuntosDeKudo', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'acta.pdf' }));
 
     await waitFor(() => {
-      expect(ventana.location.href).toBe('https://x.test/adjuntos/k/a?X-Amz-Signature=z');
+      expect(ventana.location.href).toBe('blob:local/acta');
     });
 
     expect(abrir).toHaveBeenCalledTimes(1);
-    // Se corta la relación con la aplicación: lo que cargue el almacenamiento no puede tocarla.
+    // Se corta la relación con la aplicación: lo que cargue la pestaña no puede tocarla.
     expect(ventana.opener).toBeNull();
   });
 
-  it('cierra la ventana en blanco si no se pudo obtener el enlace', async () => {
+  it('cierra la ventana en blanco si no se pudo descargar el archivo', async () => {
     const ventana = { opener: null as unknown, location: { href: '' }, close: vi.fn() };
     vi.stubGlobal(
       'open',
@@ -140,7 +143,7 @@ describe('AdjuntosDeKudo', () => {
     );
 
     fingirRed({
-      '/kudos/k1/adjuntos/a1/descarga': () =>
+      '/kudos/k1/adjuntos/a1/archivo': () =>
         new Response(JSON.stringify({ detail: 'Este Kudo no tiene el adjunto indicado.' }), {
           status: 400,
         }),

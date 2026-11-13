@@ -4,7 +4,7 @@ import { guardarSesion, reiniciarParaPruebas } from '../autenticacion/almacenDeS
 import {
   MAXIMO_POR_KUDO,
   TAMANO_MAXIMO_BYTES,
-  pedirEnlaceDeDescarga,
+  descargarAdjunto,
   subirAdjunto,
   tamanoLegible,
   validarSeleccion,
@@ -114,37 +114,36 @@ describe('subir un adjunto', () => {
     return llamadas;
   }
 
-  const URL_ALMACENAMIENTO = 'https://kudos.ejemplo.test/adjuntos/kudos/k1/a1?X-Amz-Signature=abc';
+  const permiso = () => new Response(JSON.stringify({ adjuntoId: 'a1' }), { status: 200 });
 
-  const permiso = () =>
-    new Response(
-      JSON.stringify({ adjuntoId: 'a1', urlDeSubida: URL_ALMACENAMIENTO, validezMinutos: 10 }),
-      { status: 200 },
-    );
+  const rutasFelices = () => ({
+    '/adjuntos/intencion': permiso,
+    '/adjuntos/a1/contenido': () => new Response(null, { status: 204 }),
+    '/confirmar': () => new Response(null, { status: 204 }),
+  });
 
-  it('sigue los tres pasos en orden: pedir permiso, subir y confirmar', async () => {
-    const archivo = unArchivo('acta.pdf', 'application/pdf');
-    const llamadas = fingirRed({
-      '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response(null, { status: 200 }),
-      '/confirmar': () => new Response(null, { status: 204 }),
+  const sesion = () =>
+    guardarSesion({
+      token: 'token-de-la-sesion',
+      expiraEn: Date.now() + 3_600_000,
+      nombre: 'Ana',
+      personaId: 'p1',
     });
 
-    await subirAdjunto('k1', archivo);
+  it('sigue los tres pasos en orden: reservar, subir el contenido y confirmar', async () => {
+    const llamadas = fingirRed(rutasFelices());
+
+    await subirAdjunto('k1', unArchivo('acta.pdf', 'application/pdf'));
 
     expect(llamadas.map((l) => l.metodo)).toEqual(['POST', 'PUT', 'POST']);
     expect(llamadas[0]?.url).toBe('/api/kudos/k1/adjuntos/intencion');
-    expect(llamadas[1]?.url).toBe(URL_ALMACENAMIENTO);
+    expect(llamadas[1]?.url).toBe('/api/kudos/k1/adjuntos/a1/contenido');
     expect(llamadas[2]?.url).toBe('/api/kudos/k1/adjuntos/a1/confirmar');
   });
 
-  it('sube exactamente el archivo elegido, a la dirección que dio la API', async () => {
+  it('sube exactamente el archivo elegido, con su tipo', async () => {
     const archivo = unArchivo('acta.pdf', 'application/pdf');
-    const llamadas = fingirRed({
-      '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response(null, { status: 200 }),
-      '/confirmar': () => new Response(null, { status: 204 }),
-    });
+    const llamadas = fingirRed(rutasFelices());
 
     await subirAdjunto('k1', archivo);
 
@@ -153,33 +152,22 @@ describe('subir un adjunto', () => {
   });
 
   /**
-   * **La que más importa de este archivo.** La subida va a otro servicio, y mandarle el token de
-   * sesión de la plataforma sería filtrarlo. La URL prefirmada ya lleva su propia credencial.
+   * **La que más importa de este archivo.** Los tres pasos van a la API y los tres llevan la
+   * sesión: la API es la única que habla con el almacenamiento y necesita saber quién sube.
    */
-  it('no manda el token de la sesión al almacenamiento', async () => {
-    guardarSesion({
-      token: 'token-secreto-de-la-sesion',
-      expiraEn: Date.now() + 3_600_000,
-      nombre: 'Ana',
-      personaId: 'p1',
-    });
-
-    const llamadas = fingirRed({
-      '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response(null, { status: 200 }),
-      '/confirmar': () => new Response(null, { status: 204 }),
-    });
+  it('manda la sesión en los tres pasos, y todos van a la API', async () => {
+    sesion();
+    const llamadas = fingirRed(rutasFelices());
 
     await subirAdjunto('k1', unArchivo('acta.pdf', 'application/pdf'));
 
-    // Las llamadas a la API sí llevan el token...
-    expect(llamadas[0]?.cabeceras['Authorization']).toBe('Bearer token-secreto-de-la-sesion');
-    // ...y la subida al almacenamiento, no.
-    expect(llamadas[1]?.cabeceras['Authorization']).toBeUndefined();
-    expect(JSON.stringify(llamadas[1])).not.toContain('token-secreto');
+    for (const llamada of llamadas) {
+      expect(llamada.url.startsWith('/api/')).toBe(true);
+      expect(llamada.cabeceras['Authorization']).toBe('Bearer token-de-la-sesion');
+    }
   });
 
-  it('dice qué archivo falló cuando la API rechaza pedir permiso, y no intenta subir nada', async () => {
+  it('dice qué archivo falló cuando la API rechaza reservar, y no intenta subir nada', async () => {
     const llamadas = fingirRed({
       '/adjuntos/intencion': () =>
         new Response(
@@ -192,63 +180,65 @@ describe('subir un adjunto', () => {
       /«acta.pdf» no se pudo adjuntar: Otra operación modificó/,
     );
 
-    // Sin permiso no hay URL a la que subir: la única llamada es la que falló.
     expect(llamadas).toHaveLength(1);
   });
 
-  it('dice en qué paso falló cuando el almacenamiento rechaza la subida', async () => {
+  it('dice qué archivo y por qué cuando la API rechaza el contenido', async () => {
     fingirRed({
       '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response('denegado', { status: 403 }),
+      '/adjuntos/a1/contenido': () =>
+        new Response(JSON.stringify({ detail: 'El archivo supera el máximo permitido.' }), {
+          status: 400,
+        }),
     });
 
     await expect(subirAdjunto('k1', unArchivo('acta.pdf', 'application/pdf'))).rejects.toThrow(
-      /acta\.pdf.*403/,
+      /acta.pdf.*supera el máximo/,
     );
   });
 
   it('no intenta confirmar si la subida falló', async () => {
     const llamadas = fingirRed({
       '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response('error', { status: 500 }),
+      '/adjuntos/a1/contenido': () => new Response('error', { status: 500 }),
     });
 
     await expect(
       subirAdjunto('k1', unArchivo('acta.pdf', 'application/pdf')),
     ).rejects.toBeInstanceOf(Error);
 
-    // Confirmar un archivo que no llegó solo produciría un error confuso.
     expect(llamadas.some((l) => l.url.includes('/confirmar'))).toBe(false);
   });
 
   it('enseña el motivo que da el servidor cuando el contenido real no es del tipo declarado', async () => {
     fingirRed({
-      '/adjuntos/intencion': permiso,
-      '/adjuntos/kudos/': () => new Response(null, { status: 200 }),
+      ...rutasFelices(),
       '/confirmar': () =>
         new Response(
           JSON.stringify({
             detail: 'El tipo de archivo application/octet-stream no está permitido.',
           }),
-          {
-            status: 400,
-          },
+          { status: 400 },
         ),
     });
 
     await expect(subirAdjunto('k1', unArchivo('falso.pdf', 'application/pdf'))).rejects.toThrow(
-      /falso\.pdf.*no está permitido/,
+      /falso.pdf.*no está permitido/,
     );
   });
 
-  it('pide un enlace de descarga a la API y devuelve su dirección', async () => {
-    fingirRed({
-      '/descarga': () =>
-        new Response(JSON.stringify({ url: 'https://x.test/adjuntos/k/a?X-Amz-Signature=z' })),
+  it('descarga el archivo con la sesión y lo devuelve como Blob', async () => {
+    sesion();
+    const llamadas = fingirRed({
+      '/adjuntos/a1/archivo': () =>
+        new Response('%PDF-1.7', { headers: { 'Content-Type': 'application/pdf' } }),
     });
 
-    expect(await pedirEnlaceDeDescarga('k1', 'a1')).toBe(
-      'https://x.test/adjuntos/k/a?X-Amz-Signature=z',
-    );
+    const blob = await descargarAdjunto('k1', 'a1');
+
+    expect(llamadas[0]?.url).toBe('/api/kudos/k1/adjuntos/a1/archivo');
+    expect(llamadas[0]?.cabeceras['Authorization']).toBe('Bearer token-de-la-sesion');
+    expect(blob.size).toBe('%PDF-1.7'.length);
+    expect(blob.type).toBe('application/pdf');
   });
 });

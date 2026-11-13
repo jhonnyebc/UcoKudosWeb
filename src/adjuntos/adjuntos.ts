@@ -1,12 +1,12 @@
-import { ErrorDeApi, pedir } from '../api/cliente';
+import { ErrorDeApi, pedir, pedirArchivo } from '../api/cliente';
 import type { SubidaAdjunto } from '../api/tipos';
 
 /**
  * Subida de adjuntos (RF-08, ADR-0012).
  *
- * La subida va en **tres pasos y el archivo no atraviesa la API**: se pide permiso, se sube el
- * archivo directo al almacenamiento con una URL prefirmada, y se confirma para que el servidor lo
- * inspeccione. Los megabytes no pasan por la aplicación, que es lo que la mantiene ligera.
+ * La subida va en **tres pasos y todos pasan por la API, con la sesión**: se reserva el adjunto, se
+ * sube su contenido, y se confirma para que el servidor lo inspeccione. El almacenamiento no es
+ * alcanzable desde internet, así que no hay enlaces que filtrar ni caducar.
  */
 
 /** Tipos que acepta el dominio. Tiene que coincidir con `Adjunto.TiposPermitidos` del back-end. */
@@ -94,29 +94,17 @@ export async function subirAdjunto(kudoId: string, archivo: File): Promise<void>
     throw new Error(`«${archivo.name}» no se pudo adjuntar: ${motivo}`);
   }
 
-  // Paso 2: subir directo al almacenamiento.
-  //
-  // **Aquí no se usa `pedir`, y no es un descuido.** Esa función añade la cabecera de autorización
-  // con el token de la sesión, y la URL prefirmada ya lleva su propia credencial en la dirección.
-  // Mandar además el token de la plataforma a otro servicio sería filtrarlo, y el almacenamiento
-  // rechazaría una petición con dos mecanismos de autenticación a la vez.
-  let respuesta: Response;
+  // Paso 2: subir el contenido a la API, con la sesión. La API lo guarda en el almacenamiento, que
+  // no es alcanzable desde internet. Antes se subía directo con una URL prefirmada y fallaba con
+  // 403 en producción: el almacenamiento validaba la firma con un secreto distinto del esperado.
   try {
-    respuesta = await fetch(permiso.urlDeSubida, {
-      method: 'PUT',
-      headers: { 'Content-Type': archivo.type },
-      body: archivo,
+    await pedir<void>(`/kudos/${kudoId}/adjuntos/${permiso.adjuntoId}/contenido`, {
+      metodo: 'PUT',
+      archivo,
     });
-  } catch {
-    throw new Error(
-      `No se pudo subir «${archivo.name}». Comprueba tu conexión e inténtalo de nuevo.`,
-    );
-  }
-
-  if (!respuesta.ok) {
-    throw new Error(
-      `No se pudo subir «${archivo.name}» (el almacenamiento respondió ${respuesta.status}).`,
-    );
+  } catch (causa) {
+    const motivo = causa instanceof ErrorDeApi ? causa.message : 'error desconocido';
+    throw new Error(`No se pudo subir «${archivo.name}»: ${motivo}`);
   }
 
   // Paso 3: confirmar. El servidor lee el archivo y comprueba su tipo REAL por los primeros bytes,
@@ -132,10 +120,9 @@ export async function subirAdjunto(kudoId: string, archivo: File): Promise<void>
 }
 
 /**
- * Pide el enlace de descarga de un adjunto. Cada petición queda auditada en el servidor, que es lo
- * que permite saber quién vio qué archivo, y la URL vence en minutos: no se guarda ni se comparte.
+ * Descarga un adjunto con la sesión de quien lo pide. Cada descarga queda auditada en el servidor,
+ * que es lo que permite saber quién vio qué archivo.
  */
-export async function pedirEnlaceDeDescarga(kudoId: string, adjuntoId: string): Promise<string> {
-  const respuesta = await pedir<{ url: string }>(`/kudos/${kudoId}/adjuntos/${adjuntoId}/descarga`);
-  return respuesta.url;
+export async function descargarAdjunto(kudoId: string, adjuntoId: string): Promise<Blob> {
+  return await pedirArchivo(`/kudos/${kudoId}/adjuntos/${adjuntoId}/archivo`);
 }

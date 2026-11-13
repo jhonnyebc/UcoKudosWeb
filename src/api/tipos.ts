@@ -88,12 +88,9 @@ export interface Verificacion {
   readonly detalle: string;
 }
 
-/** Lo que devuelve la API al pedir subir un adjunto: a dónde subir y con qué confirmar después. */
+/** Lo que devuelve la API al reservar un adjunto: con su identificador se sube y se confirma. */
 export interface SubidaAdjunto {
   readonly adjuntoId: string;
-  /** URL prefirmada del almacenamiento. Es de un solo uso lógico y vence en pocos minutos. */
-  readonly urlDeSubida: string;
-  readonly validezMinutos: number;
 }
 
 export interface Adjunto {

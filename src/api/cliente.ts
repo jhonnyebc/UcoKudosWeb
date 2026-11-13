@@ -86,20 +86,33 @@ async function detalleDeLaApi(respuesta: Response): Promise<string | null> {
 interface OpcionesPeticion {
   readonly metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   readonly cuerpo?: unknown;
+  /** Un archivo como cuerpo, tal cual y con su propio tipo. Excluyente con `cuerpo`. */
+  readonly archivo?: File;
   readonly senal?: AbortSignal;
 }
 
-export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): Promise<T> {
-  const { metodo = 'GET', cuerpo, senal } = opciones;
+/**
+ * Hace la petición con la sesión y traduce los fallos. Es el tronco común de `pedir` (JSON) y
+ * `pedirArchivo` (bytes): así los archivos pasan por la misma autenticación y los mismos mensajes de
+ * error, y no existe un segundo camino donde olvidarse del token.
+ */
+async function enviar(
+  ruta: string,
+  opciones: OpcionesPeticion,
+  aceptar: string,
+): Promise<Response> {
+  const { metodo = 'GET', cuerpo, archivo, senal } = opciones;
 
-  const cabeceras: Record<string, string> = { Accept: 'application/json' };
+  const cabeceras: Record<string, string> = { Accept: aceptar };
 
   const token = tokenVigente();
   if (token !== null) {
     cabeceras['Authorization'] = `Bearer ${token}`;
   }
 
-  if (cuerpo !== undefined) {
+  if (archivo !== undefined) {
+    cabeceras['Content-Type'] = archivo.type;
+  } else if (cuerpo !== undefined) {
     cabeceras['Content-Type'] = 'application/json';
   }
 
@@ -109,7 +122,7 @@ export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): P
     respuesta = await fetch(`${BASE}${ruta}`, {
       method: metodo,
       headers: cabeceras,
-      body: cuerpo === undefined ? null : JSON.stringify(cuerpo),
+      body: archivo ?? (cuerpo === undefined ? null : JSON.stringify(cuerpo)),
       ...(senal ? { signal: senal } : {}),
     });
   } catch (causa) {
@@ -136,9 +149,21 @@ export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): P
     );
   }
 
+  return respuesta;
+}
+
+export async function pedir<T>(ruta: string, opciones: OpcionesPeticion = {}): Promise<T> {
+  const respuesta = await enviar(ruta, opciones, 'application/json');
+
   if (respuesta.status === 204) {
     return undefined as T;
   }
 
   return (await respuesta.json()) as T;
+}
+
+/** Descarga un archivo con la sesión de quien lo pide, como `Blob`. */
+export async function pedirArchivo(ruta: string, senal?: AbortSignal): Promise<Blob> {
+  const respuesta = await enviar(ruta, senal ? { senal } : {}, '*/*');
+  return await respuesta.blob();
 }
