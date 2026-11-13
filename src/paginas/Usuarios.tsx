@@ -306,6 +306,22 @@ function FormularioDeRol({
   const pidePrograma = elegido?.ambito === 'Programa';
   const programas = facultades.find((f) => f.id === facultadId)?.programas ?? [];
 
+  if (catalogo.length > 0 && opciones.length === 0) {
+    return (
+      <div className="formulario-respuesta">
+        <p className="meta">
+          No hay otro rol que puedas asignar a esta persona: solo asignas los roles que tú apruebas
+          (aquí, el que ya tiene). Para cambiarla de rol, debe hacerlo quien aprueba el rol nuevo.
+        </p>
+        <div className="acciones">
+          <button type="button" className="secundario" onClick={alCancelar}>
+            Cerrar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
     setEnviando(true);

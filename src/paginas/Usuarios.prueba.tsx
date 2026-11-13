@@ -183,6 +183,20 @@ describe('Usuarios', () => {
     });
   });
 
+  it('avisa cuando no hay otro rol que se pueda asignar', async () => {
+    fingirRed({
+      '/identidad/roles': () =>
+        json([{ id: 3, nombre: 'Coordinador Académico', ambito: 'Universidad' }]),
+      '/identidad/estructura': () => json(ESTRUCTURA),
+      '/usuarios': () => json([{ ...ESTUDIANTE, rol: 'Coordinador Académico' }]),
+    });
+
+    render(<Usuarios />);
+    await userEvent.click(await screen.findByRole('button', { name: 'Cambiar rol…' }));
+
+    expect(await screen.findByText(/No hay otro rol que puedas asignar/)).toBeDefined();
+  });
+
   it('muestra el error de carga si la API falla', async () => {
     fingirRed({ '/usuarios': () => json({ detail: 'No puedes administrar usuarios.' }, 403) });
 
