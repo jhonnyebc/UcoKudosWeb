@@ -37,6 +37,9 @@ const Solicitudes = lazy(() =>
 const Moderacion = lazy(() =>
   import('./paginas/Moderacion').then((m) => ({ default: m.Moderacion })),
 );
+const Indicadores = lazy(() =>
+  import('./paginas/Indicadores').then((m) => ({ default: m.Indicadores })),
+);
 const DetalleDeKudo = lazy(() =>
   import('./paginas/DetalleDeKudo').then((m) => ({ default: m.DetalleDeKudo })),
 );
@@ -76,6 +79,7 @@ export function App() {
         <NavLink to="/categorias">Categorías</NavLink>
         <NavLink to="/auditoria">Auditoría</NavLink>
         {apruebaSolicitudes(rol) && <NavLink to="/solicitudes">Cuentas</NavLink>}
+        {apruebaSolicitudes(rol) && <NavLink to="/indicadores">Indicadores</NavLink>}
         {puedeVetar(rol) && <NavLink to="/moderacion">Moderación</NavLink>}
         <NavLink to="/programas">Programas</NavLink>
         {administraEstructura(rol) && <NavLink to="/estructura">Estructura</NavLink>}
@@ -146,6 +150,15 @@ export function App() {
               element={
                 <ExigeSesion que="moderar los reportes">
                   <Moderacion />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/indicadores"
+              element={
+                <ExigeSesion que="ver los indicadores">
+                  <Indicadores />
                 </ExigeSesion>
               }
             />

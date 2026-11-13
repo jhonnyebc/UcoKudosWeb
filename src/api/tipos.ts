@@ -205,3 +205,23 @@ export interface FacultadAdmin {
   readonly activa: boolean;
   readonly programas: readonly ProgramaAdmin[];
 }
+
+/** Un conteo con su etiqueta: una categoría, un mes, una persona. */
+export interface Conteo {
+  readonly etiqueta: string;
+  readonly total: number;
+}
+
+/** Indicadores de gestión del ámbito de quien consulta. */
+export interface Indicadores {
+  readonly alcance: string;
+  readonly kudosPublicados: number;
+  readonly personasActivas: number;
+  readonly calificacionPromedio: number | null;
+  readonly totalCalificaciones: number;
+  readonly reportesPendientes: number | null;
+  readonly porCategoria: readonly Conteo[];
+  readonly porMes: readonly Conteo[];
+  readonly masReconocidos: readonly Conteo[];
+  readonly masReconocen: readonly Conteo[];
+}
