@@ -733,3 +733,34 @@ button.peligro:disabled {
   padding-left: var(--espacio-2);
   padding-right: var(--espacio-2);
 }
+
+/* Calificar: cinco estrellas que se pulsan, con el promedio al lado. */
+.calificador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-2);
+}
+
+.calificador__estrellas {
+  display: flex;
+}
+
+button.estrella {
+  min-width: var(--toque-minimo);
+  padding: 0;
+  background: transparent;
+  color: #8a6d00;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+button.estrella--activa {
+  color: #b58900;
+}
+
+button.estrella:disabled {
+  background: transparent;
+  color: var(--color-texto-suave);
+}

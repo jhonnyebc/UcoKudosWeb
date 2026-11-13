@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { KudoDelMuro } from '../api/tipos';
 import { AccionesDeModeracion } from './AccionesDeModeracion';
 import { AdjuntosDeKudo } from './AdjuntosDeKudo';
+import { Calificador } from './Calificador';
 
 /**
  * Un Kudo en el muro.
@@ -53,15 +54,13 @@ export function TarjetaDeKudo({ kudo }: { kudo: KudoDelMuro }) {
             {kudo.totalReplicas} {kudo.totalReplicas === 1 ? 'respuesta' : 'respuestas'}
           </span>
         )}
-
-        {kudo.totalCalificaciones > 0 && kudo.promedioCalificacion !== null && (
-          <span>
-            {' · '}
-            {kudo.promedioCalificacion.toFixed(1)} de 5
-            <span className="solo-lectores"> según {kudo.totalCalificaciones} calificaciones</span>
-          </span>
-        )}
       </p>
+
+      <Calificador
+        kudoId={kudo.id}
+        promedio={kudo.promedioCalificacion}
+        total={kudo.totalCalificaciones}
+      />
 
       {kudo.totalAdjuntos > 0 && <AdjuntosDeKudo kudoId={kudo.id} total={kudo.totalAdjuntos} />}
 
