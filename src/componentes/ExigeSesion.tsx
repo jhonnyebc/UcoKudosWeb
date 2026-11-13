@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useSesion } from '../autenticacion/useSesion';
 import { MarcaKudos } from './MarcaKudos';
@@ -45,6 +46,10 @@ export function ExigeSesion({ children, que }: { children: ReactNode; que: strin
       <button type="button" className="boton-grande" onClick={entrar}>
         Entrar para {que}
       </button>
+
+      <p className="meta">
+        ¿Todavía no tienes cuenta? <Link to="/registro">Solicítala aquí</Link>.
+      </p>
     </section>
   );
 }

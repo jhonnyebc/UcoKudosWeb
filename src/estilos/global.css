@@ -664,3 +664,36 @@ button.boton-grande {
   margin: 0 0 var(--espacio-2);
   overflow-wrap: anywhere;
 }
+
+/* Formularios de registro y verificación, y el aviso de éxito. */
+.formulario,
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+}
+
+.campo {
+  gap: var(--espacio-1);
+  margin-bottom: var(--espacio-3);
+}
+
+.formulario .campo {
+  margin-bottom: 0;
+}
+
+.fila-codigo__controles {
+  display: flex;
+  gap: var(--espacio-2);
+}
+
+.fila-codigo__controles input {
+  letter-spacing: 0.3em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.exito {
+  color: var(--color-marca-oscuro);
+  font-weight: 600;
+}

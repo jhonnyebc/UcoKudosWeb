@@ -104,3 +104,43 @@ export interface DetalleKudo {
   readonly kudo: KudoDelMuro;
   readonly adjuntos: readonly Adjunto[];
 }
+
+/** Un programa académico, para elegir al registrarse. */
+export interface Programa {
+  readonly id: string;
+  readonly nombre: string;
+  readonly codigo: string;
+}
+
+export interface Facultad {
+  readonly id: string;
+  readonly nombre: string;
+  readonly codigo: string;
+  readonly programas: readonly Programa[];
+}
+
+/** Un rol del catálogo. El ámbito dice qué hay que elegir además: nada, la facultad o el programa. */
+export interface RolDelCatalogo {
+  readonly id: number;
+  readonly nombre: string;
+  readonly ambito: 'Universidad' | 'Facultad' | 'Programa';
+}
+
+/** Una persona con su solicitud: lo que ve su aprobador y lo que devuelve el perfil. */
+export interface PersonaConSolicitud {
+  readonly id: string;
+  readonly correoInstitucional: string;
+  readonly nombreCompleto: string;
+  readonly rol: string;
+  readonly estadoCuenta: string;
+  readonly correoVerificado: boolean;
+  readonly celularVerificado: boolean;
+}
+
+/** En qué punto está un registro: qué falta para que la cuenta quede activa. */
+export interface EstadoRegistro {
+  readonly correoVerificado: boolean;
+  readonly celularVerificado: boolean;
+  readonly solicitudAprobada: boolean;
+  readonly estadoCuenta: string;
+}

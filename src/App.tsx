@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
+import { apruebaSolicitudes, useMiRol } from './autenticacion/useMiRol';
 import { useRestaurarSesion } from './autenticacion/useRestaurarSesion';
 import { Cabecera } from './componentes/Cabecera';
 import { ExigeSesion } from './componentes/ExigeSesion';
@@ -23,9 +24,15 @@ const Auditoria = lazy(() => import('./paginas/Auditoria').then((m) => ({ defaul
 const Categorias = lazy(() =>
   import('./paginas/Categorias').then((m) => ({ default: m.Categorias })),
 );
+const Registro = lazy(() => import('./paginas/Registro').then((m) => ({ default: m.Registro })));
+const Verificar = lazy(() => import('./paginas/Verificar').then((m) => ({ default: m.Verificar })));
+const Solicitudes = lazy(() =>
+  import('./paginas/Solicitudes').then((m) => ({ default: m.Solicitudes })),
+);
 
 export function App() {
   const restaurando = useRestaurarSesion();
+  const rol = useMiRol();
 
   if (restaurando) {
     // Mientras se recupera la sesión no se dibuja el contenido: enseñar "necesitas iniciar sesión"
@@ -53,6 +60,7 @@ export function App() {
         <NavLink to="/avisos">Avisos</NavLink>
         <NavLink to="/categorias">Categorías</NavLink>
         <NavLink to="/auditoria">Auditoría</NavLink>
+        {apruebaSolicitudes(rol) && <NavLink to="/solicitudes">Cuentas</NavLink>}
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
@@ -105,6 +113,19 @@ export function App() {
                 </ExigeSesion>
               }
             />
+
+            <Route
+              path="/solicitudes"
+              element={
+                <ExigeSesion que="resolver las solicitudes de cuenta">
+                  <Solicitudes />
+                </ExigeSesion>
+              }
+            />
+
+            {/* Públicas: quien se registra todavía no tiene cuenta con la que entrar. */}
+            <Route path="/registro" element={<Registro />} />
+            <Route path="/verificar" element={<Verificar />} />
 
             <Route path="/retorno" element={<Retorno />} />
             <Route path="*" element={<NoEncontrada />} />
