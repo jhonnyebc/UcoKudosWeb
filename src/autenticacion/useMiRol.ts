@@ -69,6 +69,11 @@ export function puedeVetar(rol: string | null): boolean {
   return rol === 'Rector' || rol === 'Coordinador Académico';
 }
 
+/** Administrar facultades y programas: Administrador, Rector y Coordinador Académico. */
+export function administraEstructura(rol: string | null): boolean {
+  return rol === 'Administrador del Sistema' || rol === 'Rector' || rol === 'Coordinador Académico';
+}
+
 /** Para las pruebas: olvida lo guardado. */
 export function olvidarRoles(): void {
   consultas.clear();

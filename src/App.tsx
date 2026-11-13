@@ -1,7 +1,12 @@
 import { lazy, Suspense } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
-import { apruebaSolicitudes, puedeVetar, useMiRol } from './autenticacion/useMiRol';
+import {
+  administraEstructura,
+  apruebaSolicitudes,
+  puedeVetar,
+  useMiRol,
+} from './autenticacion/useMiRol';
 import { useRestaurarSesion } from './autenticacion/useRestaurarSesion';
 import { Cabecera } from './componentes/Cabecera';
 import { ExigeSesion } from './componentes/ExigeSesion';
@@ -31,6 +36,10 @@ const Solicitudes = lazy(() =>
 );
 const Moderacion = lazy(() =>
   import('./paginas/Moderacion').then((m) => ({ default: m.Moderacion })),
+);
+const Programas = lazy(() => import('./paginas/Programas').then((m) => ({ default: m.Programas })));
+const Estructura = lazy(() =>
+  import('./paginas/Estructura').then((m) => ({ default: m.Estructura })),
 );
 
 export function App() {
@@ -65,6 +74,8 @@ export function App() {
         <NavLink to="/auditoria">Auditoría</NavLink>
         {apruebaSolicitudes(rol) && <NavLink to="/solicitudes">Cuentas</NavLink>}
         {puedeVetar(rol) && <NavLink to="/moderacion">Moderación</NavLink>}
+        <NavLink to="/programas">Programas</NavLink>
+        {administraEstructura(rol) && <NavLink to="/estructura">Estructura</NavLink>}
       </nav>
 
       <main id="contenido" className="contenido" tabIndex={-1}>
@@ -132,6 +143,24 @@ export function App() {
               element={
                 <ExigeSesion que="moderar los reportes">
                   <Moderacion />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/programas"
+              element={
+                <ExigeSesion que="ver los programas">
+                  <Programas />
+                </ExigeSesion>
+              }
+            />
+
+            <Route
+              path="/estructura"
+              element={
+                <ExigeSesion que="administrar la estructura académica">
+                  <Estructura />
                 </ExigeSesion>
               }
             />

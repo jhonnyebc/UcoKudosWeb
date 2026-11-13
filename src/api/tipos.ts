@@ -171,3 +171,37 @@ export interface Replica {
   readonly totalCalificaciones: number;
   readonly publicadaEn: string;
 }
+
+/** Un programa de una persona y por qué: «Principal» (el de su rol), «Matrícula» o «Docencia». */
+export interface ProgramaDePersona {
+  readonly programaId: string;
+  readonly programaNombre: string;
+  readonly programaCodigo: string;
+  readonly facultadId: string;
+  readonly facultadNombre: string;
+  readonly relacion: 'Principal' | 'Matrícula' | 'Docencia';
+}
+
+/** Lo que el enunciado pide poder conocer de cada persona: sus programas, o la facultad que acompaña. */
+export interface ProgramasDePersona {
+  readonly personaId: string;
+  readonly nombreCompleto: string;
+  readonly rol: string;
+  readonly facultadAcompanada: string | null;
+  readonly programas: readonly ProgramaDePersona[];
+}
+
+export interface ProgramaAdmin {
+  readonly id: string;
+  readonly nombre: string;
+  readonly codigo: string;
+  readonly activo: boolean;
+}
+
+export interface FacultadAdmin {
+  readonly id: string;
+  readonly nombre: string;
+  readonly codigo: string;
+  readonly activa: boolean;
+  readonly programas: readonly ProgramaAdmin[];
+}
